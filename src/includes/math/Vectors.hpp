@@ -6,9 +6,9 @@
 struct Vector2f {
     float x, y;
 
-    Vector2f():x(0.0f), y(0.0f) {}
-    Vector2f(float p_x, float p_y):x(p_x), y(p_y) {}
-    Vector2f(int p_x, int p_y):x(static_cast<float>(p_x)), y(static_cast<float>(p_y)) {}
+    constexpr Vector2f():x(0.0f), y(0.0f) {}
+    constexpr Vector2f(float p_x, float p_y):x(p_x), y(p_y) {}
+    constexpr Vector2f(int p_x, int p_y):x(static_cast<float>(p_x)), y(static_cast<float>(p_y)) {}
 
     Vector2f operator- (const Vector2f& b) const {
         return Vector2f(x - b.x, y - b.y);

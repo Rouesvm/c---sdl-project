@@ -12,7 +12,8 @@ class AssetManager {
         Renderer* renderer = nullptr;
     private:
         std::vector<Texture> textures{};
-        std::unordered_map<std::string, Texture*> string_to_textures{};
+        
+        std::unordered_map<std::string, int> string_to_textures{};
     public:
         AssetManager() {};
         AssetManager(Renderer&);

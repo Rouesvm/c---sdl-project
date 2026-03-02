@@ -20,6 +20,6 @@ class Renderer {
     public:
         Texture loadTexture(const std::string&);
         void renderTexture(Texture*, RenderContext&);
-        void renderTexture(Texture*, Vector2f& position, Vector2f& size);
+        void renderTexture(Texture*, const Vector2f& position, const Vector2f& size);
         SDL_Renderer* getRenderer();
 };

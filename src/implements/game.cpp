@@ -1,43 +1,70 @@
-#include "Game.hpp"
+#include <thread>
+
+#include "SDL3/SDL_mouse.h"
 #include "SDL3/SDL_events.h"
-#include "SDL3/SDL_rect.h"
+
 #include "management/AssetManager.hpp"
 #include "math/Vectors.hpp"
+#include "renderer/Renderer.hpp"
 
-#include <thread>
+#include "Game.hpp"
+
+InputState Game::INPUT_STATE;
 
 Game::Game(): window_renderer("game"), asset_manager() {
     this->asset_manager = AssetManager(window_renderer.currentRenderer());
 
-    asset_manager.insertTexture("box", "asset/player.png");
+    asset_manager.insertTexture("pickaxe", "asset/player.png");
+    asset_manager.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
+    asset_manager.insertTexture("block", "asset/block.png");
 }
 
 void Game::render() {
     window_renderer.clear();
-    Vector2f position{320, 160}, size{80, 80};
-    window_renderer.currentRenderer().renderTexture(asset_manager.getTexture("box"), position, size);
+
+    static constexpr Vector2f size{64, 64};
+    static constexpr Vector2f half_size{size.x / 2, size.y / 2};
+
+    int block_size = 24;
+    for (int x = 0; x < 16; x++) {
+        for (int y = 0; y < 16; y++) {
+            window_renderer.currentRenderer().renderTexture(
+                asset_manager.getTexture("block"), 
+                Vector2f{x * block_size, y * block_size}, 
+                {block_size, block_size}
+            );
+        }
+    }
+
+    Texture* texture;
+    if (inputState().isMouseDown()) {
+        texture = asset_manager.getTexture("pickaxe_clicked");
+    } else texture = asset_manager.getTexture("pickaxe");
+    window_renderer.currentRenderer().renderTexture(texture, inputState().mousePosition() - half_size, size);
+
     window_renderer.present();
 }
 
 void Game::poll() {
+    Vector2f mousePosition;
+    (void) SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
+    INPUT_STATE.setMousePosition(mousePosition);
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        
-        bool keyUp = false;
-        bool keyDown = false;
+        bool keyUp = event.type == SDL_EVENT_KEY_UP && event.key.repeat == 0;
+        bool keyDown = event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0;
 
-        (void) keyUp;
+        INPUT_STATE.setMouseDown(event.type == SDL_EventType::SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT);
 
         switch (event.type) {
             case SDL_EVENT_QUIT: running = false; break;
-            case SDL_EVENT_KEY_UP: keyUp = true; break;
-            case SDL_EVENT_KEY_DOWN: keyDown = true; break;
         }
     }
 }
 
 void Game::update() {
-
+    window_renderer.update();
 }
 
 void Game::tick() {
@@ -73,11 +100,6 @@ void Game::loop() {
     uint64_t lastCounter = SDL_GetPerformanceCounter();
 
     double accumulator = 0.0;
-
-    uint64_t fpsTimer = SDL_GetPerformanceCounter();
-
-    double PHYSICS_STEP = 1 / 60.0;
-    double FRAME_DURATION = 1 / 60.0;
 
     while (running) {
         const uint64_t frameStart = SDL_GetPerformanceCounter();

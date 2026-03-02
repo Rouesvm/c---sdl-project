@@ -12,12 +12,15 @@ void AssetManager::insertTexture(const std::string& name, const std::string& fil
     Texture texture = renderer->loadTexture(filepath);
     textures.push_back(std::move(texture));
 
-    Texture& ptr = textures.back();
-    string_to_textures.try_emplace(name, &ptr);
+    size_t index = textures.size() - 1;
+    SDL_SetTextureScaleMode(
+        textures[index].texture, 
+        SDL_ScaleMode::SDL_SCALEMODE_PIXELART
+    );
 
-    SDL_SetTextureScaleMode(texture.texture, SDL_ScaleMode::SDL_SCALEMODE_PIXELART);
+    string_to_textures.emplace(name, index);
 }
 
 Texture* AssetManager::getTexture(const std::string& name) {
-    return string_to_textures.at(name);
+    return &textures[string_to_textures.at(name)];
 }

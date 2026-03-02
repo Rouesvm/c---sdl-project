@@ -1,8 +1,8 @@
+#include <string>
+
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_video.h"
-
-#include <string>
 
 #include "renderer/WindowRenderer.hpp"
 
@@ -29,6 +29,6 @@ void WindowRenderer::present() {
     (void) SDL_RenderPresent(renderer.getRenderer());
 }
 
-Renderer& WindowRenderer::currentRenderer() {
-    return renderer;
+void WindowRenderer::update() {
+    SDL_GetWindowSize(window, &window_size.x, &window_size.y);
 }

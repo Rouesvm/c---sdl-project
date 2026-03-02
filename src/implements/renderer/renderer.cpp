@@ -2,6 +2,7 @@
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_surface.h"
 #include "SDL3/SDL_video.h"
+
 #include "math/Vectors.hpp"
 
 #include "renderer/Renderer.hpp"
@@ -44,7 +45,7 @@ void Renderer::renderTexture(Texture* texture, RenderContext& context) {
     (void) SDL_RenderTexture(renderer, texture->texture, &context.src, &context.dst);
 } 
 
-void Renderer::renderTexture(Texture* texture, Vector2f& position, Vector2f& size) {
+void Renderer::renderTexture(Texture* texture, const Vector2f& position, const Vector2f& size) {
     SDL_FRect rect{position.x, position.y, size.x, size.y};
     (void) SDL_RenderTexture(renderer, texture->texture, nullptr, &rect);
 } 
