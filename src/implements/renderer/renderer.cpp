@@ -41,11 +41,11 @@ Texture Renderer::loadTexture(const std::string& filename) {
     };
 }
 
-void Renderer::renderTexture(Texture* texture, RenderContext& context) {
+void Renderer::renderTexture(const Texture* texture, RenderContext& context) {
     (void) SDL_RenderTexture(renderer, texture->texture, &context.src, &context.dst);
 } 
 
-void Renderer::renderTexture(Texture* texture, const Vector2f& position, const Vector2f& size) {
+void Renderer::renderTexture(const Texture* texture, const Vector2f& position, const Vector2f& size) {
     SDL_FRect rect{position.x, position.y, size.x, size.y};
     (void) SDL_RenderTexture(renderer, texture->texture, nullptr, &rect);
 } 

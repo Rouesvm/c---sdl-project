@@ -1,6 +1,8 @@
 #include "math/Vectors.hpp"
+
 #include "renderer/WindowRenderer.hpp"
 #include "management/AssetManager.hpp"
+#include "world/World.hpp"
 
 class InputState {
     bool MOUSE_DOWN;
@@ -22,9 +24,11 @@ class Game {
         static constexpr Vector2f HALF_SIZE{PLAYER_SIZE.x / 2, PLAYER_SIZE.y / 2};
     private:
         static InputState INPUT_STATE;
+        static AssetManager ASSET_MANAGER;
 
         WindowRenderer window_renderer;
-        AssetManager asset_manager;
+
+        World world;
 
         bool running = true;
 
@@ -33,6 +37,7 @@ class Game {
         Game();
     public:
         static const InputState& inputState() {return INPUT_STATE;};
+        static const AssetManager& assetManager() {return ASSET_MANAGER;};
     private:
         void render();
         void poll();

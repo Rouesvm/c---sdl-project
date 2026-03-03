@@ -21,6 +21,6 @@ void AssetManager::insertTexture(const std::string& name, const std::string& fil
     string_to_textures.emplace(name, index);
 }
 
-Texture* AssetManager::getTexture(const std::string& name) {
+const Texture* AssetManager::getTexture(const std::string& name) const {
     return &textures[string_to_textures.at(name)];
 }

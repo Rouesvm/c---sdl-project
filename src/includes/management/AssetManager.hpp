@@ -19,5 +19,5 @@ class AssetManager {
         AssetManager(Renderer&);
     public:
         void insertTexture(const std::string&, const std::string&);
-        Texture* getTexture(const std::string&);
+        const Texture* getTexture(const std::string&) const;
 };

@@ -5,7 +5,6 @@
 
 #include "management/AssetManager.hpp"
 
-#include "math/Math.hpp"
 #include "math/Vectors.hpp"
 
 #include "renderer/Renderer.hpp"
@@ -13,22 +12,32 @@
 #include "Game.hpp"
 
 InputState Game::INPUT_STATE;
+AssetManager Game::ASSET_MANAGER;
 
-Game::Game(): window_renderer("game"), asset_manager() {
-    this->asset_manager = AssetManager(window_renderer.currentRenderer());
+Game::Game(): window_renderer("game"), world() {
+    Game::ASSET_MANAGER = AssetManager(window_renderer.currentRenderer());
 
-    asset_manager.insertTexture("pickaxe", "asset/player.png");
-    asset_manager.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
-    asset_manager.insertTexture("block", "asset/block.png");
+    ASSET_MANAGER.insertTexture("pickaxe", "asset/player.png");
+    ASSET_MANAGER.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
+    ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
+
+    for (int x = 0; x < 16; x++) {
+        for (int y = 0; y < 16; y++) {
+            Vector2i position{x, y};
+            world.addTile(position, {1});
+        }
+    }
 }
 
 void Game::render() {
     window_renderer.clear();
 
-    Texture* texture;
+    world.render(window_renderer.currentRenderer());
+
+    const Texture* texture;
     if (INPUT_STATE.isMouseDown()) {
-        texture = asset_manager.getTexture("pickaxe_clicked");
-    } else texture = asset_manager.getTexture("pickaxe");
+        texture = ASSET_MANAGER.getTexture("pickaxe_clicked");
+    } else texture = ASSET_MANAGER.getTexture("pickaxe");
     window_renderer.currentRenderer().renderTexture(texture, position * 8, PLAYER_SIZE * 8);
 
     window_renderer.present();
