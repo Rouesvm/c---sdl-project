@@ -26,7 +26,7 @@ void Game::render() {
     window_renderer.clear();
 
     Texture* texture;
-    if (inputState().isMouseDown()) {
+    if (INPUT_STATE.isMouseDown()) {
         texture = asset_manager.getTexture("pickaxe_clicked");
     } else texture = asset_manager.getTexture("pickaxe");
     window_renderer.currentRenderer().renderTexture(texture, position * 8, PLAYER_SIZE * 8);
@@ -41,12 +41,19 @@ void Game::update(double deltaTime) {
     Vector2f finalPosition{position};
 
     velocity.y = 4.5 * deltaTime;
+    if (INPUT_STATE.isMouseDown()) {
+        velocity.y = -2.5 * deltaTime;
+    }
+
     finalPosition.y += velocity.y;
 
-    Vector2i actualSize{window_renderer.windowSize() / 8};
-    if (actualSize.x > (position.x + PLAYER_SIZE.x) && actualSize.y > (position.y + PLAYER_SIZE.y)) {
+    Vector2i actualWindowSize{window_renderer.windowSize() / 8};
+    if (
+        actualWindowSize.x > (position.x + PLAYER_SIZE.x) && actualWindowSize.y > (position.y + PLAYER_SIZE.y) && 
+        (position.x + PLAYER_SIZE.x > 0 && position.y + PLAYER_SIZE.y > 0)
+    ) {
         position = finalPosition;
-    } else position -= (finalPosition - position);
+    }
 }
 
 void Game::poll() {
@@ -107,7 +114,7 @@ void Game::loop() {
         const double deltaTime = static_cast<double>(frameStart - lastCounter) / frequency;
         lastCounter = frameStart;
         accumulator += deltaTime;
-
+ 
         const double MAX_ACCUMULATOR = PHYSICS_STEP * 5.0;
         accumulator = std::min(accumulator, MAX_ACCUMULATOR);
 
