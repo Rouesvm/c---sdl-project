@@ -17,6 +17,8 @@ class InputState {
 
 class Game {
     public:
+        static int inline TILE_SIZE = 8;
+
         static constexpr inline double PHYSICS_STEP = 1 / 60.0;
         static constexpr inline double FRAME_DURATION = 1 / 60.0;
 

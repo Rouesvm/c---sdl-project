@@ -28,4 +28,8 @@ namespace Math {
     inline const Vector2f floorDiv(const Vector2f& a, const int b) {
         return {floorDiv(a.x, b), floorDiv(a.y, b)};
     }
+
+    inline const Vector2i floorDiv(const Vector2i& a, const int b) {
+        return {floorDiv(a.x, b), floorDiv(a.y, b)};
+    }
 }

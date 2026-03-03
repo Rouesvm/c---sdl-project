@@ -15,6 +15,8 @@ class Renderer {
     private:
         SDL_Renderer* renderer;
     public:
+        float zoom = 4.0f;
+    public:
         Renderer() {};
         Renderer(SDL_Window*);
     public:

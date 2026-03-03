@@ -5,6 +5,7 @@
 
 #include "management/AssetManager.hpp"
 
+#include "math/Math.hpp"
 #include "math/Vectors.hpp"
 
 #include "renderer/Renderer.hpp"
@@ -21,8 +22,8 @@ Game::Game(): window_renderer("game"), world() {
     ASSET_MANAGER.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
     ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
 
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 16; y++) {
+    for (int x = 0; x < 32; x++) {
+        for (int y = 0; y < 32; y++) {
             Vector2i position{x, y};
             world.addTile(position, {1});
         }
@@ -38,30 +39,23 @@ void Game::render() {
     if (INPUT_STATE.isMouseDown()) {
         texture = ASSET_MANAGER.getTexture("pickaxe_clicked");
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
-    window_renderer.currentRenderer().renderTexture(texture, position * 8, PLAYER_SIZE * 8);
+    window_renderer.currentRenderer().renderTexture(texture, position, PLAYER_SIZE * 8);
 
     window_renderer.present();
 }
 
 void Game::update(double deltaTime) {
     window_renderer.update();
+    position = INPUT_STATE.mousePosition() - HALF_SIZE * Game::TILE_SIZE;
 
-    Vector2f velocity{};
-    Vector2f finalPosition{position};
+    const Vector2f tilePosition = Math::floorDiv(INPUT_STATE.mousePosition(), Game::TILE_SIZE * window_renderer.currentRenderer().zoom);
 
-    velocity.y = 4.5 * deltaTime;
     if (INPUT_STATE.isMouseDown()) {
-        velocity.y = -2.5 * deltaTime;
-    }
-
-    finalPosition.y += velocity.y;
-
-    Vector2i actualWindowSize{window_renderer.windowSize() / 8};
-    if (
-        actualWindowSize.x > (position.x + PLAYER_SIZE.x) && actualWindowSize.y > (position.y + PLAYER_SIZE.y) && 
-        (position.x + PLAYER_SIZE.x > 0 && position.y + PLAYER_SIZE.y > 0)
-    ) {
-        position = finalPosition;
+        Vector2i position{
+            static_cast<int>(tilePosition.x), 
+            static_cast<int>(tilePosition.y)
+        };
+        world.removeTile(position);
     }
 }
 
