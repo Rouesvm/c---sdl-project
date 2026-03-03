@@ -4,7 +4,10 @@
 #include "SDL3/SDL_events.h"
 
 #include "management/AssetManager.hpp"
+
+#include "math/Math.hpp"
 #include "math/Vectors.hpp"
+
 #include "renderer/Renderer.hpp"
 
 #include "Game.hpp"
@@ -22,27 +25,28 @@ Game::Game(): window_renderer("game"), asset_manager() {
 void Game::render() {
     window_renderer.clear();
 
-    static constexpr Vector2f size{64, 64};
-    static constexpr Vector2f half_size{size.x / 2, size.y / 2};
-
-    int block_size = 24;
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 16; y++) {
-            window_renderer.currentRenderer().renderTexture(
-                asset_manager.getTexture("block"), 
-                Vector2f{x * block_size, y * block_size}, 
-                {block_size, block_size}
-            );
-        }
-    }
-
     Texture* texture;
     if (inputState().isMouseDown()) {
         texture = asset_manager.getTexture("pickaxe_clicked");
     } else texture = asset_manager.getTexture("pickaxe");
-    window_renderer.currentRenderer().renderTexture(texture, inputState().mousePosition() - half_size, size);
+    window_renderer.currentRenderer().renderTexture(texture, position * 8, PLAYER_SIZE * 8);
 
     window_renderer.present();
+}
+
+void Game::update(double deltaTime) {
+    window_renderer.update();
+
+    Vector2f velocity{};
+    Vector2f finalPosition{position};
+
+    velocity.y = 4.5 * deltaTime;
+    finalPosition.y += velocity.y;
+
+    Vector2i actualSize{window_renderer.windowSize() / 8};
+    if (actualSize.x > (position.x + PLAYER_SIZE.x) && actualSize.y > (position.y + PLAYER_SIZE.y)) {
+        position = finalPosition;
+    } else position -= (finalPosition - position);
 }
 
 void Game::poll() {
@@ -63,13 +67,9 @@ void Game::poll() {
     }
 }
 
-void Game::update() {
-    window_renderer.update();
-}
-
-void Game::tick() {
+void Game::tick(double deltaTime) {
     poll();
-    update();
+    update(deltaTime);
 }
 
 void preciseSleep(const double seconds) {
@@ -112,7 +112,7 @@ void Game::loop() {
         accumulator = std::min(accumulator, MAX_ACCUMULATOR);
 
         while (accumulator >= PHYSICS_STEP) {
-            this->tick();
+            this->tick(PHYSICS_STEP);
             accumulator -= PHYSICS_STEP;
         }
 

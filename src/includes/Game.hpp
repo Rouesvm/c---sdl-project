@@ -17,6 +17,9 @@ class Game {
     public:
         static constexpr inline double PHYSICS_STEP = 1 / 60.0;
         static constexpr inline double FRAME_DURATION = 1 / 60.0;
+
+        static constexpr Vector2f PLAYER_SIZE{8, 8};
+        static constexpr Vector2f HALF_SIZE{PLAYER_SIZE.x / 2, PLAYER_SIZE.y / 2};
     private:
         static InputState INPUT_STATE;
 
@@ -24,6 +27,8 @@ class Game {
         AssetManager asset_manager;
 
         bool running = true;
+
+        Vector2f position;
     public:
         Game();
     public:
@@ -31,8 +36,8 @@ class Game {
     private:
         void render();
         void poll();
-        void update();
-        void tick();
+        void update(double deltaTime);
+        void tick(double deltaTime);
     public:
         void loop();
 };
