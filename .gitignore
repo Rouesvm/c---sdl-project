@@ -5,3 +5,5 @@ build-linux
 build-windows
 dlls
 vendor
+bin
+engine

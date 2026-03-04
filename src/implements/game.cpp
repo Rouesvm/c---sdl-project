@@ -44,7 +44,7 @@ void Game::render() {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     TextContext context{
-        "IRSYAD IS GAY boy",
+        "You didn't notice that.",
         {0, 0}
     };
     window_renderer.currentRenderer().renderText(context);
