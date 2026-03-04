@@ -28,6 +28,7 @@ void WindowRenderer::clear() {
 }
 
 void WindowRenderer::present() {
+    currentRenderer().text_renderer->render();
     (void) SDL_RenderPresent(renderer.getRenderer());
 }
 

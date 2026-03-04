@@ -42,13 +42,11 @@ void Game::render() {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     TextContext context{
-        "babi",
+        "WaWa",
         {0, 0}
     };
     window_renderer.currentRenderer().renderText(context);
-
     window_renderer.currentRenderer().renderTexture(texture, position, PLAYER_SIZE * 8);
-    window_renderer.currentRenderer().text_renderer->render();
 
     window_renderer.present();
 }
@@ -78,10 +76,16 @@ void Game::poll() {
         bool keyUp = event.type == SDL_EVENT_KEY_UP && event.key.repeat == 0;
         bool keyDown = event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0;
 
-        INPUT_STATE.setMouseDown(event.type == SDL_EventType::SDL_EVENT_MOUSE_BUTTON_DOWN && event.button.button == SDL_BUTTON_LEFT);
-
         switch (event.type) {
             case SDL_EVENT_QUIT: running = false; break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                if (event.button.button == SDL_BUTTON_LEFT)
+                    INPUT_STATE.setMouseDown(true);
+                    break;
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                if (event.button.button == SDL_BUTTON_LEFT)
+                    INPUT_STATE.setMouseDown(false);
+                    break;
         }
     }
 }

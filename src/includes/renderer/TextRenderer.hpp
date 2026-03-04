@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
@@ -18,23 +19,15 @@ class TextSurface {
         std::unordered_map<char, Glyph> glyphs{};
 
         TTF_Font* font = nullptr; 
-        TTF_TextEngine* text_engine = nullptr;
-
         Renderer* renderer = nullptr;
     private:
         int line_height = 0;
         int font_size = 16;
     public:
         TextSurface() {};
-        TextSurface(Renderer&, TTF_Font*, TTF_TextEngine*);
+        TextSurface(Renderer&, TTF_Font*);
 
         ~TextSurface();
-
-        TextSurface(const TextSurface&) = delete;
-        TextSurface& operator=(const TextSurface&) = delete;
-
-        TextSurface(TextSurface&&) = default;
-        TextSurface& operator=(TextSurface&&) = default;
 
         Glyph& getGlyph(char c);
         void renderText(const TextContext&);
@@ -47,12 +40,12 @@ class TextRenderer {
         TextSurface text;
 
         TTF_Font* font = nullptr; 
-        TTF_TextEngine* text_engine = nullptr;
-
         Renderer* renderer = nullptr;
     public:
         TextRenderer() {};
         TextRenderer(Renderer&);
+
+        ~TextRenderer();
     public:
         void addText(TextContext&);
         void render();
