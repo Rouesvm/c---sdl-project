@@ -19,6 +19,8 @@ WindowRenderer::WindowRenderer(const std::string& title) {
     }
 
     renderer = Renderer(window);
+    text_renderer = TextRenderer(renderer);
+    renderer.text_renderer = &text_renderer;
 }
 
 void WindowRenderer::clear() {

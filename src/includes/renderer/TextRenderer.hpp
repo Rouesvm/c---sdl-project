@@ -1,0 +1,59 @@
+#include <unordered_map>
+#include <vector>
+
+#include "SDL3_ttf/SDL_ttf.h"
+
+#include "renderer/Context.hpp"
+#include "renderer/Renderer.hpp"
+
+struct Glyph {
+    SDL_Texture* gpu_char;
+    int advance = 0;
+    int width = 0;
+    int height = 0;
+};
+
+class TextSurface {
+    private:
+        std::unordered_map<char, Glyph> glyphs{};
+
+        TTF_Font* font = nullptr; 
+        TTF_TextEngine* text_engine = nullptr;
+
+        Renderer* renderer = nullptr;
+    private:
+        int line_height = 0;
+        int font_size = 16;
+    public:
+        TextSurface() {};
+        TextSurface(Renderer&, TTF_Font*, TTF_TextEngine*);
+
+        ~TextSurface();
+
+        TextSurface(const TextSurface&) = delete;
+        TextSurface& operator=(const TextSurface&) = delete;
+
+        TextSurface(TextSurface&&) = default;
+        TextSurface& operator=(TextSurface&&) = default;
+
+        Glyph& getGlyph(char c);
+        void renderText(const TextContext&);
+};
+
+class TextRenderer {
+    private:
+        std::vector<TextContext> to_render;
+    private:
+        TextSurface text;
+
+        TTF_Font* font = nullptr; 
+        TTF_TextEngine* text_engine = nullptr;
+
+        Renderer* renderer = nullptr;
+    public:
+        TextRenderer() {};
+        TextRenderer(Renderer&);
+    public:
+        void addText(TextContext&);
+        void render();
+};

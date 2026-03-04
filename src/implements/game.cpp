@@ -8,6 +8,7 @@
 #include "math/Math.hpp"
 #include "math/Vectors.hpp"
 
+#include "renderer/Context.hpp"
 #include "renderer/Renderer.hpp"
 
 #include "Game.hpp"
@@ -39,7 +40,15 @@ void Game::render() {
     if (INPUT_STATE.isMouseDown()) {
         texture = ASSET_MANAGER.getTexture("pickaxe_clicked");
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
+
+    TextContext context{
+        "babi",
+        {0, 0}
+    };
+    window_renderer.currentRenderer().renderText(context);
+
     window_renderer.currentRenderer().renderTexture(texture, position, PLAYER_SIZE * 8);
+    window_renderer.currentRenderer().text_renderer->render();
 
     window_renderer.present();
 }

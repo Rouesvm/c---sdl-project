@@ -4,8 +4,10 @@
 #include "SDL3/SDL_video.h"
 
 #include "math/Vectors.hpp"
+#include "renderer/Context.hpp"
 
 #include "renderer/Renderer.hpp"
+#include "renderer/TextRenderer.hpp"
 
 Renderer::Renderer(SDL_Window* window) {
     this->renderer = SDL_CreateRenderer(window, nullptr);
@@ -49,3 +51,7 @@ void Renderer::renderTexture(const Texture* texture, const Vector2f& position, c
     SDL_FRect rect{position.x, position.y, size.x, size.y};
     (void) SDL_RenderTexture(renderer, texture->texture, nullptr, &rect);
 } 
+
+void Renderer::renderText(TextContext& context) {
+    text_renderer->addText(context);
+}
