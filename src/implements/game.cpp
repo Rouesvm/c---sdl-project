@@ -15,6 +15,7 @@
 
 InputState Game::INPUT_STATE;
 AssetManager Game::ASSET_MANAGER;
+ClientState Game::CLIENT_STATE;
 
 Game::Game(): window_renderer("game"), world() {
     Game::ASSET_MANAGER = AssetManager(window_renderer.currentRenderer());
@@ -22,6 +23,7 @@ Game::Game(): window_renderer("game"), world() {
     ASSET_MANAGER.insertTexture("pickaxe", "asset/player.png");
     ASSET_MANAGER.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
     ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
+    ASSET_MANAGER.insertTexture("stone", "asset/stone.png");
 
     for (int x = 0; x < 32; x++) {
         for (int y = 0; y < 32; y++) {
@@ -42,11 +44,12 @@ void Game::render() {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     TextContext context{
-        "WaWa",
+        "IRSYAD IS GAY boy",
         {0, 0}
     };
     window_renderer.currentRenderer().renderText(context);
     window_renderer.currentRenderer().renderTexture(texture, position, PLAYER_SIZE * 8);
+
 
     window_renderer.present();
 }
@@ -64,6 +67,8 @@ void Game::update(double deltaTime) {
         };
         world.removeTile(position);
     }
+
+    Game::CLIENT_STATE.setWindowSize(window_renderer.windowSize());
 }
 
 void Game::poll() {

@@ -15,6 +15,14 @@ class InputState {
         void setMouseDown(bool isDown) {MOUSE_DOWN = isDown;};
 };
 
+class ClientState {
+    Vector2i WINDOW_SIZE;
+    public:
+        const Vector2i& windowSize() const {return WINDOW_SIZE;}
+    public:
+        void setWindowSize(const Vector2i& position) {WINDOW_SIZE = position;};
+};
+
 class Game {
     public:
         static int inline TILE_SIZE = 8;
@@ -26,6 +34,7 @@ class Game {
         static constexpr Vector2f HALF_SIZE{PLAYER_SIZE.x / 2, PLAYER_SIZE.y / 2};
     private:
         static InputState INPUT_STATE;
+        static ClientState CLIENT_STATE;
         static AssetManager ASSET_MANAGER;
 
         WindowRenderer window_renderer;
@@ -39,6 +48,7 @@ class Game {
         Game();
     public:
         static const InputState& inputState() {return INPUT_STATE;};
+        static const ClientState& clientState() {return CLIENT_STATE;};
         static const AssetManager& assetManager() {return ASSET_MANAGER;};
     private:
         void render();
