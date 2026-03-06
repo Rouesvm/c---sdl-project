@@ -72,7 +72,7 @@ void World::removeTile(const Vector2i& position) {
 void World::render(Renderer& renderer) {
     const AssetManager& manager = Game::assetManager();
 
-    int renderedPositions = 0;
+    int estimatedRenderedTiles = 0;
 
     const Vector2i& windowSizeInTiles = Math::floorDiv(Game::clientState().windowSize(), Game::TILE_SIZE * renderer.zoom);
 
@@ -89,16 +89,17 @@ void World::render(Renderer& renderer) {
     Vector2i tileOffset{};
 
     for (int x = 0; x < windowSizeInTiles.x + 1; x++) {
+        position.x = x;
+        renderContext.dst.x = position.x * zoom;
+
         for (int y = 0; y < windowSizeInTiles.y + 1; y++) {
-            position.x = x;
             position.y = y;
+            renderContext.dst.y = position.y * zoom;
 
             renderContext.src.x = 0;
             renderContext.src.y = 0;
-            renderContext.dst.x = position.x * zoom;
-            renderContext.dst.y = position.y * zoom;
 
-            renderedPositions++;
+            estimatedRenderedTiles++;
             renderer.renderTexture(manager.getTexture("dirt"), renderContext);
 
             const auto& it = tiles.find(position);
@@ -125,7 +126,7 @@ void World::render(Renderer& renderer) {
         }
     }
 
-    TextContext text{std::to_string(renderedPositions), {0, 16}};
+    TextContext text{std::to_string(estimatedRenderedTiles), {0, 16}};
     renderer.renderText(text);
 }   
 
