@@ -20,4 +20,6 @@ class AssetManager {
     public:
         void insertTexture(const std::string&, const std::string&);
         const Texture* getTexture(const std::string&) const;
-};
+        const Texture* getTexture(int) const;
+        int storedTextureSize() const {return textures.size();};
+};      

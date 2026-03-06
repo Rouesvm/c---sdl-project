@@ -14,29 +14,31 @@
 #include "Game.hpp"
 
 InputState Game::INPUT_STATE;
-AssetManager Game::ASSET_MANAGER;
 ClientState Game::CLIENT_STATE;
+AssetManager Game::ASSET_MANAGER;
 
 Game::Game(): window_renderer("game"), world() {
     Game::ASSET_MANAGER = AssetManager(window_renderer.currentRenderer());
 
     ASSET_MANAGER.insertTexture("pickaxe", "asset/player.png");
     ASSET_MANAGER.insertTexture("pickaxe_clicked", "asset/player-clicked.png");
-    ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
-    ASSET_MANAGER.insertTexture("stone", "asset/stone.png");
 
-    for (int x = 0; x < 32; x++) {
-        for (int y = 0; y < 32; y++) {
-            Vector2i position{x, y};
-            world.addTile(position, {1});
-        }
+    int start = ASSET_MANAGER.storedTextureSize();
+    ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
+    ASSET_MANAGER.insertTexture("stone", "asset/furnace-2.png");
+    ASSET_MANAGER.insertTexture("furnace", "asset/furnace.png");
+    int finalSize = ASSET_MANAGER.storedTextureSize();
+
+    for (int i = 0; i < finalSize - start; i++) {
+        world.textures[i] = start + i;
     }
 }
 
 void Game::render() {
     window_renderer.clear();
 
-    world.render(window_renderer.currentRenderer());
+    Renderer& renderer = window_renderer.currentRenderer();
+    world.render(renderer);
 
     const Texture* texture;
     if (INPUT_STATE.isMouseDown()) {
@@ -44,12 +46,12 @@ void Game::render() {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     TextContext context{
-        "You didn't notice that.",
+        "FPS: 0",
         {0, 0}
     };
-    window_renderer.currentRenderer().renderText(context);
-    window_renderer.currentRenderer().renderTexture(texture, position, PLAYER_SIZE * 8);
 
+    renderer.renderText(context);
+    renderer.renderTexture(texture, position, PLAYER_SIZE * 8);
 
     window_renderer.present();
 }
@@ -65,7 +67,12 @@ void Game::update(double deltaTime) {
             static_cast<int>(tilePosition.x), 
             static_cast<int>(tilePosition.y)
         };
-        world.removeTile(position);
+
+        if (!INPUT_STATE.isLeft()) {
+            world.addTile(position, {1});
+        } else {
+            world.removeTile(position);
+        }
     }
 
     Game::CLIENT_STATE.setWindowSize(window_renderer.windowSize());
@@ -80,17 +87,23 @@ void Game::poll() {
     while (SDL_PollEvent(&event)) {
         bool keyUp = event.type == SDL_EVENT_KEY_UP && event.key.repeat == 0;
         bool keyDown = event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0;
-
+        
         switch (event.type) {
-            case SDL_EVENT_QUIT: running = false; break;
+            case SDL_EVENT_QUIT:
+                running = false;
+                break;
+
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                INPUT_STATE.setMouseDown(true);
+
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    INPUT_STATE.setMouseDown(true);
-                    break;
+                    INPUT_STATE.setMouseSide(true);
+                else if (event.button.button == SDL_BUTTON_RIGHT)
+                    INPUT_STATE.setMouseSide(false);
+                break;
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                    INPUT_STATE.setMouseDown(false);
-                    break;
+                INPUT_STATE.setMouseDown(false);
+                break;
         }
     }
 }

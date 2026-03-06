@@ -5,14 +5,17 @@
 #include "world/World.hpp"
 
 class InputState {
+    bool IS_LEFT;
     bool MOUSE_DOWN;
     Vector2f MOUSE_POSITION;
     public:
         const Vector2f& mousePosition() const {return MOUSE_POSITION;}
         bool isMouseDown() const {return MOUSE_DOWN;}
+        bool isLeft() const {return IS_LEFT;}
     public:
         void setMousePosition(Vector2f& position) {MOUSE_POSITION = position;};
         void setMouseDown(bool isDown) {MOUSE_DOWN = isDown;};
+        void setMouseSide(bool isLeft) {IS_LEFT = isLeft;};
 };
 
 class ClientState {
