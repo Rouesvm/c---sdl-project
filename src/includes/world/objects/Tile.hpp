@@ -2,6 +2,7 @@
 
 #include "math/Vectors.hpp"
 #include <cstdint>
+#include <vector>
 
 struct Tile {
     uint16_t id = 0;
@@ -47,9 +48,33 @@ struct Tile {
     }
 };
 
+enum struct SIDE {
+    UP = 0,
+    DOWN = 1,
+    LEFT = 2,
+    RIGHT = 3
+};
+
+enum struct TYPE {
+    INPUT = 0,
+    OUTPUT = 1
+};
+
+struct TileIO {
+    TYPE type;
+    SIDE side;
+    uint8_t x = 0;
+    uint8_t y = 0;
+};
+
 struct TileSettings {
     bool is_machine = false;
     bool is_multi_tiled = false;
-    int size_x = 0;
-    int size_y = 0;
+
+    uint8_t size_x = 1;
+    uint8_t size_y = 1;
+
+    uint8_t inventory_size = 0;
+
+    std::vector<TileIO> ios{};
 };

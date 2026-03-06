@@ -15,7 +15,9 @@ World::World() {
     tile_settings.push_back(TileSettings{
         true,
         true,
-        2, 2
+        2, 2,
+        2,
+        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 }
 
