@@ -70,63 +70,62 @@ void World::removeTile(const Vector2i& position) {
 }
 
 void World::render(Renderer& renderer) {
-    Vector2f tileSize{Game::TILE_SIZE, Game::TILE_SIZE};
-    Vector2i position;
-
     const AssetManager& manager = Game::assetManager();
 
-    int renderedBlocks = 0;
+    int renderedPositions = 0;
 
     const Vector2i& windowSizeInTiles = Math::floorDiv(Game::clientState().windowSize(), Game::TILE_SIZE * renderer.zoom);
 
-    RenderContext renderContext{};
-    renderContext.src = {0, 0, 16, 16};
+    float zoom = Game::TILE_SIZE * renderer.zoom;
+    RenderContext renderContext{
+        .src = {0, 0, 16, 16},
+        .dst = {0, 0, 
+            zoom, 
+            zoom
+        }
+    };
 
-    Vector2f renderPosition;
-    Vector2f renderSize;
+    Vector2i position{};
+    Vector2i tileOffset{};
 
     for (int x = 0; x < windowSizeInTiles.x + 1; x++) {
         for (int y = 0; y < windowSizeInTiles.y + 1; y++) {
             position.x = x;
             position.y = y;
 
-            renderedBlocks++;
-            renderer.renderTexture(manager.getTexture("dirt"), (Vector2f{position.x, position.y} * Game::TILE_SIZE) * renderer.zoom, tileSize * renderer.zoom);
+            renderContext.src.x = 0;
+            renderContext.src.y = 0;
+            renderContext.dst.x = position.x * zoom;
+            renderContext.dst.y = position.y * zoom;
+
+            renderedPositions++;
+            renderer.renderTexture(manager.getTexture("dirt"), renderContext);
 
             const auto& it = tiles.find(position);
             if (it == tiles.end()) continue;
-
-            Tile& tile = it->second;
+            const Tile& tile = it->second;
 
             if (tile.isAir()) continue;
 
-            renderPosition = (Vector2f{position.x, position.y} * Game::TILE_SIZE) * renderer.zoom;
-            renderSize = (tileSize) * renderer.zoom;
-
-            renderContext.dst = {renderPosition.x, renderPosition.y, renderSize.x, renderSize.y};
-
             if (tile.id != 0) {
                 const Texture* blockTexture = manager.getTexture(textures[tile.id]);
-                renderContext.src.x = 0;
-                renderContext.src.y = 0;
                 renderer.renderTexture(blockTexture, renderContext);
             } else {
-                Vector2i tileOffset = tile.getOffset();
-                auto it = tiles.find(position - tileOffset);
+                tileOffset = tile.getOffset();
+                const auto& it = tiles.find(position - tileOffset);
                 if (it == tiles.end()) continue;
 
                 int mainTileID = it->second.id;
 
                 const Texture* blockTexture = manager.getTexture(textures[mainTileID]);
-                Vector2i renderOffset = tileOffset * 16;
-                renderContext.src.x = renderOffset.x;
-                renderContext.src.y = renderOffset.y;
+                renderContext.src.x = tileOffset.x * 16;
+                renderContext.src.y = tileOffset.y * 16;
                 renderer.renderTexture(blockTexture, renderContext);
             }
         }
     }
 
-    TextContext text{std::to_string(renderedBlocks), {0, 16}};
+    TextContext text{std::to_string(renderedPositions), {0, 16}};
     renderer.renderText(text);
 }   
 
