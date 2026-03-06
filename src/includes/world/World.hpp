@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
 
 #include "math/Vectors.hpp"
 #include "world/objects/Tile.hpp"
@@ -13,8 +13,7 @@ class World {
         std::unordered_map<Vector2i, Tile> tiles{};
     private:
         std::vector<TileSettings> tile_settings{};
-    public:
-        std::array<int, 128> textures{};
+        std::array<uint8_t, 128> textures{};
     public:
         World();
     public:
