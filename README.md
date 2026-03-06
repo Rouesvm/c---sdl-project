@@ -14,15 +14,15 @@
 ### 3. Configuring the build directory.
 
 #### For Linux
-Run `cmake -S . -B build`
+* Run `cmake -S . -B build`
 
 #### For Windows
-Run `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake`
+* Run `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake`
 
 #
 
 ### 4. Compiling
-Run `cmake --build build`
+* Run `cmake --build build`
 
 #
 
