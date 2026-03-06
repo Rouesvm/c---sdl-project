@@ -18,7 +18,7 @@ sed -i 's/set(CMAKE_CXX_STANDARD 11)/set(CMAKE_CXX_STANDARD 17)/' jsoncpp/CMakeL
 
 cd jsoncpp
 mkdir build && cd build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DCMAKE_CXX_STANDARD=20 -DCMAKE_TOOLCHAIN_FILE=/path/to/mingw_toolchain.cmake
+cmake .. -DBUILD_SHARED_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DCMAKE_CXX_STANDARD=20
 make -j$(nproc)
 
 cd ../../../..
