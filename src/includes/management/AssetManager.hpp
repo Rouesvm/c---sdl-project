@@ -17,6 +17,11 @@ class AssetManager {
     public:
         AssetManager() {};
         AssetManager(Renderer&);
+        ~AssetManager() {
+            for (Texture& texture : textures) {
+                SDL_DestroyTexture(texture.texture);
+            }
+        }
     public:
         void insertTexture(const std::string&, const std::string&);
         const Texture* getTexture(const std::string&) const;
