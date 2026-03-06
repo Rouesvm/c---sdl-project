@@ -1,5 +1,5 @@
 # factroy game
-# a factory game made using SDL3 and C plus plus
+## a factory game made using SDL3 and C plus plus
 
 ### 1. Clone the libraries below into a folder called vendor in the root directory. Create the vendor folder if it doesn't exist.
 * SDL3
