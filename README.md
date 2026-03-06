@@ -14,7 +14,7 @@ a factory game made using SDL3 and C plus plus
 
 ### 3. Configuring the build directory and compiling.
 
-3.1. Run these commands inside of the root directory!
+#### Run these commands inside of the root directory!
 
 #### Linux
 1. `cmake -S . -B build`
