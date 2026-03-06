@@ -46,3 +46,10 @@ struct Tile {
         offset = ((dy & 0xF) << 4) | (dx & 0xF);
     }
 };
+
+struct TileSettings {
+    bool is_machine = false;
+    bool is_multi_tiled = false;
+    int size_x = 0;
+    int size_y = 0;
+};

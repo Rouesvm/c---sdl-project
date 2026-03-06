@@ -11,7 +11,8 @@ class Renderer;
 class World {
     private:
         std::unordered_map<Vector2i, Tile> tiles{};
-        std::vector<bool> is_machine{};
+    private:
+        std::vector<TileSettings> tile_settings{};
     public:
         std::array<int, 128> textures{};
     public:

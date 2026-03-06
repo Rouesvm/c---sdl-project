@@ -10,8 +10,13 @@
 #include "world/World.hpp"
 
 World::World() {
-    is_machine.push_back(false);
-    is_machine.push_back(true);
+    tile_settings.push_back(TileSettings{
+    });
+    tile_settings.push_back(TileSettings{
+        true,
+        true,
+        2, 2
+    });
 }
 
 void World::addTile(const Vector2i& position, Tile tile) {
@@ -19,11 +24,10 @@ void World::addTile(const Vector2i& position, Tile tile) {
     if (current.isSolid())
         return;
 
-    if (is_machine.size() >= tile.id && is_machine[tile.id]) {
-        Vector2i tileSize{2,2};
-
-        for (int x = 0; x < tileSize.x; x++) {
-            for (int y = 0; y < tileSize.y; y++) {
+    const TileSettings& setting = tile.id < tile_settings.size() ? tile_settings[tile.id] : tile_settings[0];
+    if (setting.is_multi_tiled) {
+        for (int x = 0; x < setting.size_x; x++) {
+            for (int y = 0; y < setting.size_y; y++) {
                 if (x == 0 && y == 0) continue;
 
                 const auto& it = tiles.find({position.x + x, position.y + y});
@@ -32,8 +36,8 @@ void World::addTile(const Vector2i& position, Tile tile) {
             }
         }
 
-        for (int x = 0; x < tileSize.x; x++) {
-            for (int y = 0; y < tileSize.y; y++) {
+        for (int x = 0; x < setting.size_x; x++) {
+            for (int y = 0; y < setting.size_y; y++) {
                 if (x == 0 && y == 0) continue;
 
                 Vector2i offsetPosition{position.x + x, position.y + y};
@@ -56,11 +60,10 @@ void World::removeTile(const Vector2i& position) {
         main = it->second.getMainTile(position);
 
     int mainID = tiles[main].id;
-    if (is_machine.size() >= mainID && is_machine[mainID]) {
-        Vector2i size{2,2};
-
-        for (int x = 0; x < size.x; x++) {
-            for (int y = 0; y < size.y; y++) {
+    const TileSettings& setting = mainID < tile_settings.size() ? tile_settings[mainID] : tile_settings[0];
+    if (setting.is_multi_tiled) {
+        for (int x = 0; x < setting.size_x; x++) {
+            for (int y = 0; y < setting.size_y; y++) {
                 tiles.erase({main.x + x, main.y + y});
             }
         }
