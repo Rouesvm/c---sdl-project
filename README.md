@@ -12,18 +12,15 @@ a factory game made using SDL3 and C plus plus
 
 #
 
-### 3. Configuring the build directory.
+### 3. Configuring the build directory and compiling.
 
 #### Linux
-`cmake -S . -B build`
+1. `cmake -S . -B build`
+2. `cmake --build build`
 
 #### Windows
-`cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake`
-
-#
-
-### 4. Compiling
-* Run `cmake --build build`
+1. `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake`
+2. `cmake --build build`
 
 #
 
