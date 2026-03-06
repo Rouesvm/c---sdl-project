@@ -28,6 +28,6 @@
 
 ### Congratulations! You now have an executable file. Ensure you have the executable in a directory with the assets for the game.
 #### The structure would be as shown below.
-- game/
-    ├─ assets/
-    └─ executable
+* game/
+    * ├─ assets/
+    * └─ executable
