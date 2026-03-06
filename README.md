@@ -4,7 +4,7 @@
 * SDL3
 * SDL_ttf
 
-### 2. After downloading and moving those libraries into the vendor folder
+### 2. After cloning those libraries into the vendor folder
 * Go to SDL_ttf/external and run download.sh
 
 ### 3. Configuring the build directory.
