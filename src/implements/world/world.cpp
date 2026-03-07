@@ -19,6 +19,15 @@ World::World() {
         2,
         {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
+    tile_settings.push_back(TileSettings{
+        true,
+        true,
+        2, 2,
+        2,
+        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+    });
+    tile_settings.push_back(TileSettings{
+    });
 }
 
 void World::addTile(const Vector2i& position, Tile tile) {
@@ -61,7 +70,11 @@ void World::removeTile(const Vector2i& position) {
     if (it->second.isMultiTile())
         main = it->second.getMainTile(position);
 
-    int mainID = tiles[main].id;
+    it = tiles.find(main);
+    if (it == tiles.end())
+        return;
+
+    int mainID = it->second.id;
     const TileSettings& setting = mainID < tile_settings.size() ? tile_settings[mainID] : tile_settings[0];
     if (setting.is_multi_tiled) {
         for (int x = 0; x < setting.size_x; x++) {
@@ -69,9 +82,7 @@ void World::removeTile(const Vector2i& position) {
                 tiles.erase({main.x + x, main.y + y});
             }
         }
-    } else {
-        tiles.erase(main);
-    }
+    } else tiles.erase(main);
 }
 
 void World::render(Renderer& renderer) {
@@ -85,8 +96,10 @@ void World::render(Renderer& renderer) {
     const Vector2f startTiles = Math::floorDiv(cameraOffset, Game::TILE_SIZE_IN_PIXELS);
     const Vector2f endTiles = Math::floorDiv(cameraOffset + Math::toVector2f(Game::clientState().windowSize() / renderer.zoom), Game::TILE_SIZE_IN_PIXELS);
 
-    const Vector2i start = Math::toVector2i((startTiles)) - Vector2i{1, 1};
-    const Vector2i end = Math::toVector2i((endTiles)) + Vector2i{1, 1}; 
+    const int startX = static_cast<int>(startTiles.x) - 1;
+    const int startY = static_cast<int>(startTiles.y) - 1;
+    const int endX = static_cast<int>(endTiles.x) + 1;
+    const int endY = static_cast<int>(endTiles.y) + 1;
 
     RenderContext renderContext{
         .src = {0, 0, 16, 16},
@@ -100,11 +113,11 @@ void World::render(Renderer& renderer) {
     Vector2i tileOffset{};
 
     const Texture* dirt = manager.getTexture("dirt");
-    for (int x = start.x; x <= end.x; x++) {
+    for (int x = startX; x <= endX; x++) {
         position.x = x;
         renderContext.dst.x = ((position.x * Game::TILE_SIZE_IN_PIXELS) - cameraOffset.x) * renderer.zoom;
 
-        for (int y = start.y; y <= end.y; y++) {
+        for (int y = startY; y <= endY; y++) {
             position.y = y;
             renderContext.dst.y = ((position.y * Game::TILE_SIZE_IN_PIXELS) - cameraOffset.y) * renderer.zoom;
 

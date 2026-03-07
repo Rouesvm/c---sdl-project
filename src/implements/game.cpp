@@ -28,6 +28,7 @@ Game::Game(): window_renderer("game"), camera(), world() {
     ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
     ASSET_MANAGER.insertTexture("stone", "asset/furnace-2.png");
     ASSET_MANAGER.insertTexture("furnace", "asset/furnace.png");
+    ASSET_MANAGER.insertTexture("convenyor", "asset/convenyor.png");
     int finalSize = ASSET_MANAGER.storedTextureSize();
 
     for (int i = 0; i < finalSize - start; i++) {
@@ -73,19 +74,11 @@ void Game::update(double deltaTime) {
     );
 
     if (INPUT_STATE.isMouseDown()) {
-        Vector2i position{
-            static_cast<int>(tilePosition.x), 
-            static_cast<int>(tilePosition.y)
-        };
-
-        if (!INPUT_STATE.isLeft()) {
-            world.addTile(position, {1});
-        } else {
-            world.removeTile(position);
-        }
+        const Vector2i position = Math::toVector2i(tilePosition);
+        !INPUT_STATE.isLeft() ? world.addTile(position, {static_cast<uint16_t>(block_id)}) : world.removeTile(position);
     }
 
-    int speed = 5;
+    int speed = 1;
     if (up) player_position.y -= speed;
     if (down) player_position.y += speed;
     if (left) player_position.x -= speed;
@@ -124,6 +117,11 @@ void Game::poll() {
             if (event.key.key == SDLK_S) down = true;
             if (event.key.key == SDLK_A) left = true;
             if (event.key.key == SDLK_D) right = true;
+
+            switch (event.key.key) {
+                case SDLK_1: block_id = 1; break;
+                case SDLK_2: block_id = 3; break;
+            }
         }
 
         if (event.type == SDL_EVENT_KEY_UP) {

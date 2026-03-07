@@ -58,6 +58,8 @@ class Game {
         bool down = false;
         bool left = false;
         bool right = false;
+
+        int block_id = 1;
     public:
         Game();
     public:
