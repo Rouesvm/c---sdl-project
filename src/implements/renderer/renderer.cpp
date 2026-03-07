@@ -35,11 +35,7 @@ Texture Renderer::loadTexture(const std::string& filename) {
     }
 
     return Texture{
-        texture, 
-        {
-            texture->w, 
-            texture->h
-        }
+        texture
     };
 }
 

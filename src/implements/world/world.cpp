@@ -79,33 +79,40 @@ void World::render(Renderer& renderer) {
 
     int estimatedRenderedTiles = 0;
 
-    const Vector2i& windowSizeInTiles = Math::floorDiv(Game::clientState().windowSize(), Game::TILE_SIZE * renderer.zoom);
+    float factor = Game::TILE_SIZE_IN_PIXELS * renderer.zoom;
+    const Vector2f& cameraOffset = Game::clientState().cameraPosition();
 
-    float zoom = Game::TILE_SIZE * renderer.zoom;
+    const Vector2f startTiles = Math::floorDiv(cameraOffset, Game::TILE_SIZE_IN_PIXELS);
+    const Vector2f endTiles = Math::floorDiv(cameraOffset + Math::toVector2f(Game::clientState().windowSize() / renderer.zoom), Game::TILE_SIZE_IN_PIXELS);
+
+    const Vector2i start = Math::toVector2i((startTiles)) - Vector2i{1, 1};
+    const Vector2i end = Math::toVector2i((endTiles)) + Vector2i{1, 1}; 
+
     RenderContext renderContext{
         .src = {0, 0, 16, 16},
         .dst = {0, 0, 
-            zoom, 
-            zoom
+            factor, 
+            factor
         }
     };
 
     Vector2i position{};
     Vector2i tileOffset{};
 
-    for (int x = 0; x < windowSizeInTiles.x + 1; x++) {
+    const Texture* dirt = manager.getTexture("dirt");
+    for (int x = start.x; x <= end.x; x++) {
         position.x = x;
-        renderContext.dst.x = position.x * zoom;
+        renderContext.dst.x = ((position.x * Game::TILE_SIZE_IN_PIXELS) - cameraOffset.x) * renderer.zoom;
 
-        for (int y = 0; y < windowSizeInTiles.y + 1; y++) {
+        for (int y = start.y; y <= end.y; y++) {
             position.y = y;
-            renderContext.dst.y = position.y * zoom;
+            renderContext.dst.y = ((position.y * Game::TILE_SIZE_IN_PIXELS) - cameraOffset.y) * renderer.zoom;
 
             renderContext.src.x = 0;
             renderContext.src.y = 0;
 
             estimatedRenderedTiles++;
-            renderer.renderTexture(manager.getTexture("dirt"), renderContext);
+            renderer.renderTexture(dirt, renderContext);
 
             const auto& it = tiles.find(position);
             if (it == tiles.end()) continue;
@@ -128,7 +135,7 @@ void World::render(Renderer& renderer) {
                 renderContext.src.y = tileOffset.y * 16;
                 renderer.renderTexture(blockTexture, renderContext);
             }
-        }
+        } 
     }
 
     TextContext text{std::to_string(estimatedRenderedTiles), {0, 16}};

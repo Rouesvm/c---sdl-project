@@ -8,7 +8,6 @@
 
 struct Texture {
     SDL_Texture* texture;
-    Vector2i size;
 };
 
 class TextRenderer;

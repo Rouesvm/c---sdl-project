@@ -8,6 +8,7 @@
 #include "math/Math.hpp"
 #include "math/Vectors.hpp"
 
+#include "player/Camera.hpp"
 #include "renderer/Context.hpp"
 #include "renderer/Renderer.hpp"
 
@@ -17,7 +18,7 @@ InputState Game::INPUT_STATE;
 ClientState Game::CLIENT_STATE;
 AssetManager Game::ASSET_MANAGER;
 
-Game::Game(): window_renderer("game"), world() {
+Game::Game(): window_renderer("game"), camera(), world() {
     Game::ASSET_MANAGER = AssetManager(window_renderer.currentRenderer());
 
     ASSET_MANAGER.insertTexture("pickaxe", "asset/player.png");
@@ -58,9 +59,18 @@ void Game::render() {
 
 void Game::update(double deltaTime) {
     window_renderer.update();
-    position = INPUT_STATE.mousePosition() - HALF_SIZE * Game::TILE_SIZE;
+    position = INPUT_STATE.mousePosition() - HALF_SIZE * Game::TILE_SIZE_IN_PIXELS;
 
-    const Vector2f tilePosition = Math::floorDiv(INPUT_STATE.mousePosition(), Game::TILE_SIZE * window_renderer.currentRenderer().zoom);
+    camera.update(Game::CLIENT_STATE.windowSize(), player_position, deltaTime);
+
+    Game::CLIENT_STATE.setCameraPosition(camera.screen_position);
+    Game::CLIENT_STATE.setWindowSize(window_renderer.windowSize());
+
+    const Vector2f tilePosition = Math::floorDiv(
+        INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
+        + CLIENT_STATE.cameraPosition(), 
+        Game::TILE_SIZE_IN_PIXELS
+    );
 
     if (INPUT_STATE.isMouseDown()) {
         Vector2i position{
@@ -75,7 +85,11 @@ void Game::update(double deltaTime) {
         }
     }
 
-    Game::CLIENT_STATE.setWindowSize(window_renderer.windowSize());
+    int speed = 5;
+    if (up) player_position.y -= speed;
+    if (down) player_position.y += speed;
+    if (left) player_position.x -= speed;
+    if (right) player_position.x += speed;
 }
 
 void Game::poll() {
@@ -85,14 +99,13 @@ void Game::poll() {
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        bool keyUp = event.type == SDL_EVENT_KEY_UP && event.key.repeat == 0;
-        bool keyDown = event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0;
+        bool keyUp = event.type == SDL_EVENT_KEY_UP;
+        bool keyDown = event.type == SDL_EVENT_KEY_DOWN;
         
         switch (event.type) {
             case SDL_EVENT_QUIT:
                 running = false;
                 break;
-
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 INPUT_STATE.setMouseDown(true);
 
@@ -104,6 +117,20 @@ void Game::poll() {
             case SDL_EVENT_MOUSE_BUTTON_UP:
                 INPUT_STATE.setMouseDown(false);
                 break;
+        }
+
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0) {
+            if (event.key.key == SDLK_W || event.key.key == SDLK_SPACE) up = true;
+            if (event.key.key == SDLK_S) down = true;
+            if (event.key.key == SDLK_A) left = true;
+            if (event.key.key == SDLK_D) right = true;
+        }
+
+        if (event.type == SDL_EVENT_KEY_UP) {
+            if (event.key.key == SDLK_W || event.key.key == SDLK_SPACE) up = false;
+            if (event.key.key == SDLK_S) down = false;
+            if (event.key.key == SDLK_A) left = false;
+            if (event.key.key == SDLK_D) right = false;
         }
     }
 }

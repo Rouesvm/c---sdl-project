@@ -25,11 +25,32 @@ namespace Math {
         return q - adjust;
     }
     
-    inline const Vector2f floorDiv(const Vector2f& a, const int b) {
+    inline const Vector2f floorDiv(const Vector2f& a, const float b) {
         return {floorDiv(a.x, b), floorDiv(a.y, b)};
     }
 
-    inline const Vector2i floorDiv(const Vector2i& a, const int b) {
+    inline const Vector2i floorDiv(const Vector2i& a, const float b) {
         return {floorDiv(a.x, b), floorDiv(a.y, b)};
+    }
+
+    inline const Vector2f toVector2f(const Vector2i& position) {
+        return Vector2f{
+            static_cast<float>(position.x),
+            static_cast<float>(position.y)
+        };
+    }
+
+    inline const Vector2i toRoundedVector2i(const Vector2f& position) {
+        return Vector2i{
+            static_cast<int>(std::round(position.x)),
+            static_cast<int>(std::round(position.y))
+        };
+    }
+
+    inline const Vector2i toVector2i(const Vector2f& position) {
+        return Vector2i{
+            static_cast<int>((position.x)),
+            static_cast<int>((position.y))
+        };
     }
 }

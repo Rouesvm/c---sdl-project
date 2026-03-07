@@ -2,6 +2,7 @@
 
 #include "renderer/WindowRenderer.hpp"
 #include "management/AssetManager.hpp"
+#include "player/Camera.hpp"
 #include "world/World.hpp"
 
 class InputState {
@@ -20,15 +21,18 @@ class InputState {
 
 class ClientState {
     Vector2i WINDOW_SIZE;
+    Vector2f CAMERA_POSITION;
     public:
         const Vector2i& windowSize() const {return WINDOW_SIZE;}
+        const Vector2f& cameraPosition() const {return CAMERA_POSITION;}
     public:
         void setWindowSize(const Vector2i& position) {WINDOW_SIZE = position;};
+        void setCameraPosition(const Vector2f& position) {CAMERA_POSITION = position;};
 };
 
 class Game {
     public:
-        static int inline TILE_SIZE = 8;
+        static int inline TILE_SIZE_IN_PIXELS = 8;
 
         static constexpr inline double PHYSICS_STEP = 1 / 60.0;
         static constexpr inline double FRAME_DURATION = 1 / 60.0;
@@ -42,11 +46,18 @@ class Game {
 
         WindowRenderer window_renderer;
 
+        Camera camera;
         World world;
 
         bool running = true;
 
         Vector2f position;
+        Vector2f player_position;
+
+        bool up = false;
+        bool down = false;
+        bool left = false;
+        bool right = false;
     public:
         Game();
     public:

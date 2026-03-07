@@ -63,7 +63,7 @@ void TextSurface::renderText(const TextContext& context) {
     Vector2f renderPosition{context.position.x, context.position.y};
     Vector2f size{0, 0};
 
-    Texture texture{nullptr, {}};
+    Texture texture{nullptr};
     for (const char& c : context.text) {
         Glyph& glyph = getGlyph(c);
         if (glyph.gpu_char) {
