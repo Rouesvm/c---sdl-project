@@ -133,8 +133,28 @@ void World::render(Renderer& renderer) {
 
             if (tile.isAir()) continue;
 
-            if (tile.id != 0) {
-                const Texture* blockTexture = manager.getTexture(textures[tile.id]);
+            const Texture* blockTexture = manager.getTexture(textures[tile.id]);
+            if (tile.id == 3) {
+                Vector2i coords[4] = {
+                    { x,   y-1 },
+                    { x,   y+1 }, 
+                    { x-1, y   },
+                    { x+1, y   }
+                };
+            
+                const bool A = tiles.find(coords[0]) != tiles.end();
+                const bool B = tiles.find(coords[1]) != tiles.end();
+                const bool C = tiles.find(coords[2]) != tiles.end();
+                const bool D = tiles.find(coords[3]) != tiles.end() ;
+
+                int mask = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D ? 8 : 0);
+                const Vector2i& src = World::TBLR_SRC_POSITIONS[mask];
+
+                renderContext.src.x = src.x * 16;
+                renderContext.src.y = src.y * 16;
+                    
+                renderer.renderTexture(blockTexture, renderContext);
+            } else if (tile.id != 0) {
                 renderer.renderTexture(blockTexture, renderContext);
             } else {
                 tileOffset = tile.getOffset();
