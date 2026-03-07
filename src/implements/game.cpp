@@ -62,10 +62,12 @@ void Game::update(double deltaTime) {
     window_renderer.update();
     position = INPUT_STATE.mousePosition() - HALF_SIZE * Game::TILE_SIZE_IN_PIXELS;
 
-    camera.update(Game::CLIENT_STATE.windowSize(), player_position, deltaTime);
+    camera.update(CLIENT_STATE.windowSize(), player_position, deltaTime);
 
-    Game::CLIENT_STATE.setCameraPosition(camera.screen_position);
-    Game::CLIENT_STATE.setWindowSize(window_renderer.windowSize());
+    CLIENT_STATE.setCameraPosition(camera.screen_position);
+    CLIENT_STATE.setWindowSize(window_renderer.windowSize());
+
+    window_renderer.currentRenderer().zoom = camera.zoom;
 
     const Vector2f tilePosition = Math::floorDiv(
         INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
@@ -91,10 +93,7 @@ void Game::poll() {
     INPUT_STATE.setMousePosition(mousePosition);
 
     SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        bool keyUp = event.type == SDL_EVENT_KEY_UP;
-        bool keyDown = event.type == SDL_EVENT_KEY_DOWN;
-        
+    while (SDL_PollEvent(&event)) {        
         switch (event.type) {
             case SDL_EVENT_QUIT:
                 running = false;
@@ -110,25 +109,36 @@ void Game::poll() {
             case SDL_EVENT_MOUSE_BUTTON_UP:
                 INPUT_STATE.setMouseDown(false);
                 break;
+            case SDL_EVENT_KEY_DOWN:
+                INPUT_STATE.setKeyDown(true);
+                INPUT_STATE.setKeyUp(false);
+                break;
+            case SDL_EVENT_KEY_UP:
+                INPUT_STATE.setKeyDown(false);
+                INPUT_STATE.setKeyUp(true);
+                break;
+            case SDL_EVENT_MOUSE_WHEEL:
+                const int& scrollY = event.wheel.y;
+                if (scrollY < 0) {
+                    if (camera.zoom < 4.0f) camera.zoom += 0.5f;
+                } else if (scrollY > 0) {
+                    if (camera.zoom > 1.0f) camera.zoom -= 0.5f;
+                }
+                break;
         }
 
-        if (event.type == SDL_EVENT_KEY_DOWN && event.key.repeat == 0) {
-            if (event.key.key == SDLK_W || event.key.key == SDLK_SPACE) up = true;
-            if (event.key.key == SDLK_S) down = true;
-            if (event.key.key == SDLK_A) left = true;
-            if (event.key.key == SDLK_D) right = true;
+        switch (event.key.key) {
+            case SDLK_W: up = INPUT_STATE.isKeyPressed(); break;
+            case SDLK_S: down = INPUT_STATE.isKeyPressed(); break;
+            case SDLK_A: left = INPUT_STATE.isKeyPressed(); break;
+            case SDLK_D: right = INPUT_STATE.isKeyPressed(); break;
+        }
 
+        if (INPUT_STATE.isKeyPressed()) {
             switch (event.key.key) {
                 case SDLK_1: block_id = 1; break;
                 case SDLK_2: block_id = 3; break;
             }
-        }
-
-        if (event.type == SDL_EVENT_KEY_UP) {
-            if (event.key.key == SDLK_W || event.key.key == SDLK_SPACE) up = false;
-            if (event.key.key == SDLK_S) down = false;
-            if (event.key.key == SDLK_A) left = false;
-            if (event.key.key == SDLK_D) right = false;
         }
     }
 }

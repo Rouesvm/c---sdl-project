@@ -17,7 +17,7 @@ class Renderer {
     public:
         TextRenderer* text_renderer;
     public:
-        float zoom = 4.0f;
+        float zoom = 2.0f;
     public:
         Renderer() {};
         Renderer(SDL_Window*);

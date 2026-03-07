@@ -6,17 +6,27 @@
 #include "world/World.hpp"
 
 class InputState {
+    Vector2f MOUSE_POSITION;
+
     bool IS_LEFT;
     bool MOUSE_DOWN;
-    Vector2f MOUSE_POSITION;
+
+    bool KEY_UP;
+    bool KEY_DOWN;
+
     public:
         const Vector2f& mousePosition() const {return MOUSE_POSITION;}
         bool isMouseDown() const {return MOUSE_DOWN;}
         bool isLeft() const {return IS_LEFT;}
+        bool isKeyUp() const {return KEY_UP;};
+        bool isKeyDown() const {return KEY_DOWN;};
+        bool isKeyPressed() const {return isKeyDown() && !isKeyUp();};
     public:
         void setMousePosition(Vector2f& position) {MOUSE_POSITION = position;};
         void setMouseDown(bool isDown) {MOUSE_DOWN = isDown;};
         void setMouseSide(bool isLeft) {IS_LEFT = isLeft;};
+        void setKeyUp(bool isKeyUp) {KEY_UP = isKeyUp;};
+        void setKeyDown(bool isKeyDown) {KEY_DOWN = isKeyDown;};
 };
 
 class ClientState {
@@ -32,7 +42,7 @@ class ClientState {
 
 class Game {
     public:
-        static int inline TILE_SIZE_IN_PIXELS = 8;
+        static int inline TILE_SIZE_IN_PIXELS = 16;
 
         static constexpr inline double PHYSICS_STEP = 1 / 60.0;
         static constexpr inline double FRAME_DURATION = 1 / 60.0;
