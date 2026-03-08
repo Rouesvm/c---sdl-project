@@ -17,7 +17,7 @@ void Camera::update(const Vector2i& windowSize, const Vector2f& playerPosition, 
     const Vector2f& targetPosition = (playerPosition * Game::TILE_SIZE_IN_PIXELS) - (windowFloatSize / 2) / zoom;
 
     position.x += (targetPosition.x - position.x) * smoothing * deltaTime;    
-    position.y += ((targetPosition.y) - position.y) * smoothing * deltaTime;
+    position.y += (targetPosition.y - position.y) * smoothing * deltaTime;
 
     screen_position.x = (position.x);
     screen_position.y = (position.y);

@@ -8,11 +8,13 @@
 class InputState {
     Vector2f MOUSE_POSITION;
 
-    bool IS_LEFT;
-    bool MOUSE_DOWN;
+    bool IS_LEFT : 1;
+    bool MOUSE_DOWN : 1;
 
-    bool KEY_UP;
-    bool KEY_DOWN;
+    bool KEY_UP : 1;
+    bool KEY_DOWN : 1;
+
+    uint8_t rotation : 2 = 0;
 
     public:
         const Vector2f& mousePosition() const {return MOUSE_POSITION;}
@@ -21,12 +23,14 @@ class InputState {
         bool isKeyUp() const {return KEY_UP;};
         bool isKeyDown() const {return KEY_DOWN;};
         bool isKeyPressed() const {return isKeyDown() && !isKeyUp();};
+        uint8_t currentRotation() const {return rotation;};
     public:
         void setMousePosition(Vector2f& position) {MOUSE_POSITION = position;};
         void setMouseDown(bool isDown) {MOUSE_DOWN = isDown;};
         void setMouseSide(bool isLeft) {IS_LEFT = isLeft;};
         void setKeyUp(bool isKeyUp) {KEY_UP = isKeyUp;};
         void setKeyDown(bool isKeyDown) {KEY_DOWN = isKeyDown;};
+        void setRotation(uint8_t currentRotation) {rotation = currentRotation;};
 };
 
 class ClientState {

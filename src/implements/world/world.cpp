@@ -31,9 +31,11 @@ World::World() {
 }
 
 void World::addTile(const Vector2i& position, Tile tile) {
-    auto& current = tiles[position];
-    if (current.isSolid())
+   auto it = tiles.find(position);
+    if (it != tiles.end() && it->second.isSolid())
         return;
+
+    Tile& current = tiles[position];
 
     const TileSettings& setting = tile.id < tile_settings.size() ? tile_settings[tile.id] : tile_settings[0];
     if (setting.is_multi_tiled) {
@@ -58,6 +60,9 @@ void World::addTile(const Vector2i& position, Tile tile) {
     }
 
     current = std::move(tile);
+    if (setting.is_machine) {
+        machines.emplace(position, setting.inventory_size);
+    }
 }
 
 void World::removeTile(const Vector2i& position) {
@@ -83,6 +88,69 @@ void World::removeTile(const Vector2i& position) {
             }
         }
     } else tiles.erase(main);
+
+    if (setting.is_machine) {
+        machines.erase(main);
+    }
+}
+
+void World::renderTile(Renderer& renderer, RenderContext& renderContext, const Vector2i& position) {
+    const auto& result = tiles.find(position);
+    if (result == tiles.end()) return;
+    const Tile& tile = result->second;
+
+    if (tile.isAir()) return;
+
+    const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
+    if (tile.id == 3) {
+        Vector2i coords[4] = {
+            { position.x,   position.y-1 }, // up
+            { position.x,   position.y+1 },  // down
+            { position.x-1, position.y   }, // left
+            { position.x+1, position.y   } // right
+        };
+
+        bool A = tiles.contains(coords[0]) && tiles.at(coords[0]).id == tile.id;
+        bool B = tiles.contains(coords[1]) && tiles.at(coords[1]).id == tile.id;
+        bool C = tiles.contains(coords[2]) && tiles.at(coords[2]).id == tile.id;
+        bool D = tiles.contains(coords[3]) && tiles.at(coords[3]).id == tile.id;
+
+        int mask = 0;
+        switch (tile.rotation) {
+            case 0: A = true; B = false; break;
+            case 1: D = true; C = false; break;
+            case 2: B = true; A = false; break;
+            case 3: C = true; D = false; break;
+        }
+
+        if (A) mask |= 1;
+        if (B) mask |= 2;
+        if (C) mask |= 4;
+        if (D) mask |= 8;
+
+        const Vector2i& src = World::CONVEYOR_SRC_POSITIONS[mask];
+
+        TextContext text{std::to_string(mask), {static_cast<int>(renderContext.dst.x), static_cast<int>(renderContext.dst.y)}};
+        renderer.renderText(text);
+
+        renderContext.src.x = src.x * 16;
+        renderContext.src.y = src.y * 16;
+            
+        renderer.renderTexture(blockTexture, renderContext);
+    } else if (tile.id != 0) {
+        renderer.renderTexture(blockTexture, renderContext);
+    } else {
+        Vector2i tileOffset = tile.getOffset();
+        const auto& it = tiles.find(position - tileOffset);
+        if (it == tiles.end()) return;;
+
+        int mainTileID = it->second.id;
+
+        const Texture* blockTexture = Game::assetManager().getTexture(textures[mainTileID]);
+        renderContext.src.x = tileOffset.x * 16;
+        renderContext.src.y = tileOffset.y * 16;
+        renderer.renderTexture(blockTexture, renderContext);
+    }
 }
 
 void World::render(Renderer& renderer) {
@@ -110,7 +178,6 @@ void World::render(Renderer& renderer) {
     };
 
     Vector2i position{};
-    Vector2i tileOffset{};
 
     const Texture* dirt = manager.getTexture("dirt");
     for (int x = startX; x <= endX; x++) {
@@ -127,54 +194,18 @@ void World::render(Renderer& renderer) {
             estimatedRenderedTiles++;
             renderer.renderTexture(dirt, renderContext);
 
-            const auto& it = tiles.find(position);
-            if (it == tiles.end()) continue;
-            const Tile& tile = it->second;
-
-            if (tile.isAir()) continue;
-
-            const Texture* blockTexture = manager.getTexture(textures[tile.id]);
-            if (tile.id == 3) {
-                Vector2i coords[4] = {
-                    { x,   y-1 },
-                    { x,   y+1 }, 
-                    { x-1, y   },
-                    { x+1, y   }
-                };
-            
-                const bool A = tiles.find(coords[0]) != tiles.end();
-                const bool B = tiles.find(coords[1]) != tiles.end();
-                const bool C = tiles.find(coords[2]) != tiles.end();
-                const bool D = tiles.find(coords[3]) != tiles.end() ;
-
-                int mask = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D ? 8 : 0);
-                const Vector2i& src = World::TBLR_SRC_POSITIONS[mask];
-
-                renderContext.src.x = src.x * 16;
-                renderContext.src.y = src.y * 16;
-                    
-                renderer.renderTexture(blockTexture, renderContext);
-            } else if (tile.id != 0) {
-                renderer.renderTexture(blockTexture, renderContext);
-            } else {
-                tileOffset = tile.getOffset();
-                const auto& it = tiles.find(position - tileOffset);
-                if (it == tiles.end()) continue;
-
-                int mainTileID = it->second.id;
-
-                const Texture* blockTexture = manager.getTexture(textures[mainTileID]);
-                renderContext.src.x = tileOffset.x * 16;
-                renderContext.src.y = tileOffset.y * 16;
-                renderer.renderTexture(blockTexture, renderContext);
-            }
+            World::renderTile(renderer, renderContext, position);
         } 
     }
 
-    TextContext text{std::to_string(estimatedRenderedTiles), {0, 16}};
+    TextContext text{std::to_string(estimatedRenderedTiles) + "\n" + "Ticking Machines: " + std::to_string(machines.size()), {0, 16}};
     renderer.renderText(text);
 }   
 
-void World::update() {
-
+void World::update(double deltaTime) {
+    for (auto& [position, machine] : machines) {
+        if (machine.update != nullptr) {
+            machine.update(deltaTime);
+        }
+    }
 }

@@ -5,8 +5,9 @@
 #include <vector>
 
 struct Tile {
-    uint16_t id = 0;
-    int8_t offset = 0;
+    uint16_t id : 8 = 0;
+    int16_t offset : 6 = 0;
+    uint16_t rotation : 2 = 0;
 
     bool isAir() const {
         return !isSolid();
@@ -28,11 +29,12 @@ struct Tile {
         if (!isMultiTile())
             return {0, 0};
         
-        int8_t x = (int8_t)(offset & 0xF);
-        int8_t y = (int8_t)((offset >> 4) & 0xF);
+        int8_t x = offset & 0x7;
+        int8_t y = (offset >> 3) & 0x7;
 
-        if (x >= 8) x -= 16;
-        if (y >= 8) y -= 16;
+        if (x >= 4) x -= 8;
+        if (y >= 4) y -= 8;
+
         return { x, y };
     }
 
@@ -44,7 +46,7 @@ struct Tile {
     void setMainTile(const Vector2i& main, const Vector2i& position) {
         int8_t dx = position.x - main.x;
         int8_t dy = position.y - main.y;
-        offset = ((dy & 0xF) << 4) | (dx & 0xF);
+        offset = ((dy & 0x7) << 3) | (dx & 0x7);
     }
 };
 

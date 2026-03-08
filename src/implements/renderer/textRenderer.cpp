@@ -65,6 +65,12 @@ void TextSurface::renderText(const TextContext& context) {
 
     Texture texture{nullptr};
     for (const char& c : context.text) {
+        if (c == '\n') {
+            renderPosition.x = context.position.x;
+            renderPosition.y += line_height;
+            continue;
+        }
+
         Glyph& glyph = getGlyph(c);
         if (glyph.gpu_char) {
             texture.texture = glyph.gpu_char;

@@ -1,5 +1,8 @@
+#include <memory>
+#include <string>
 #include <thread>
 
+#include "SDL3/SDL_keycode.h"
 #include "SDL3/SDL_mouse.h"
 #include "SDL3/SDL_events.h"
 
@@ -28,7 +31,7 @@ Game::Game(): window_renderer("game"), camera(), world() {
     ASSET_MANAGER.insertTexture("dirt", "asset/dirt.png");
     ASSET_MANAGER.insertTexture("stone", "asset/furnace-2.png");
     ASSET_MANAGER.insertTexture("furnace", "asset/furnace.png");
-    ASSET_MANAGER.insertTexture("convenyor", "asset/convenyor.png");
+    ASSET_MANAGER.insertTexture("convenyor", "asset/conveyor-2.png");
     int finalSize = ASSET_MANAGER.storedTextureSize();
 
     for (int i = 0; i < finalSize - start; i++) {
@@ -48,7 +51,7 @@ void Game::render() {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     TextContext context{
-        "FPS: 0",
+        "FPS: 0 Rotation: " + std::to_string(INPUT_STATE.currentRotation()),
         {0, 0}
     };
 
@@ -69,6 +72,8 @@ void Game::update(double deltaTime) {
 
     window_renderer.currentRenderer().zoom = camera.zoom;
 
+    world.update(deltaTime);
+
     const Vector2f tilePosition = Math::floorDiv(
         INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
         + CLIENT_STATE.cameraPosition(), 
@@ -77,7 +82,9 @@ void Game::update(double deltaTime) {
 
     if (INPUT_STATE.isMouseDown()) {
         const Vector2i position = Math::toVector2i(tilePosition);
-        !INPUT_STATE.isLeft() ? world.addTile(position, {static_cast<uint16_t>(block_id)}) : world.removeTile(position);
+        !INPUT_STATE.isLeft() ? 
+        world.addTile(position, {static_cast<uint16_t>(block_id), 0, INPUT_STATE.currentRotation()}) 
+        : world.removeTile(position);
     }
 
     int speed = 1;
@@ -132,6 +139,7 @@ void Game::poll() {
             case SDLK_S: down = INPUT_STATE.isKeyPressed(); break;
             case SDLK_A: left = INPUT_STATE.isKeyPressed(); break;
             case SDLK_D: right = INPUT_STATE.isKeyPressed(); break;
+            case SDLK_R: if (event.key.repeat == 0 && INPUT_STATE.isKeyPressed()) INPUT_STATE.setRotation((INPUT_STATE.currentRotation() + 1) % 4); break;
         }
 
         if (INPUT_STATE.isKeyPressed()) {
