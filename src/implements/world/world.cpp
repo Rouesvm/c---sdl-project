@@ -105,17 +105,33 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
     if (tile.id == 3) {
         Vector2i coords[4] = {
             { position.x,   position.y-1 }, // up
-            { position.x,   position.y+1 },  // down
+            { position.x,   position.y+1 }, // down
             { position.x-1, position.y   }, // left
-            { position.x+1, position.y   } // right
+            { position.x+1, position.y   }  // right
         };
 
-        bool A = tiles.contains(coords[0]) && tiles.at(coords[0]).id == tile.id;
-        bool B = tiles.contains(coords[1]) && tiles.at(coords[1]).id == tile.id;
-        bool C = tiles.contains(coords[2]) && tiles.at(coords[2]).id == tile.id;
-        bool D = tiles.contains(coords[3]) && tiles.at(coords[3]).id == tile.id;
+        auto tileA = tiles.find(coords[0]);
+        auto tileB = tiles.find(coords[1]);
+        auto tileC = tiles.find(coords[2]);
+        auto tileD = tiles.find(coords[3]);
 
-        int mask = 0;
+        bool A = false;
+        bool B = false;
+        bool C = false;
+        bool D = false;
+
+        if (tileA != tiles.end() && tileA->second.id == tile.id)
+            A = tileA->second.rotation == 2;
+
+        if (tileB != tiles.end() && tileB->second.id == tile.id)
+            B = tileB->second.rotation == 0;
+
+        if (tileC != tiles.end() && tileC->second.id == tile.id)
+            C = tileC->second.rotation == 1;
+
+        if (tileD != tiles.end() && tileD->second.id == tile.id)
+            D = tileD->second.rotation == 3;
+
         switch (tile.rotation) {
             case 0: A = true; B = false; break;
             case 1: D = true; C = false; break;
@@ -123,6 +139,7 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
             case 3: C = true; D = false; break;
         }
 
+        int mask = 0;
         if (A) mask |= 1;
         if (B) mask |= 2;
         if (C) mask |= 4;
