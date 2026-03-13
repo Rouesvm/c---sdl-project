@@ -3,6 +3,8 @@
 #include "SDL3/SDL_surface.h"
 #include "SDL3/SDL_video.h"
 
+#include "Game.hpp"
+
 #include "math/Vectors.hpp"
 #include "renderer/Context.hpp"
 
@@ -50,4 +52,22 @@ void Renderer::renderTexture(const Texture* texture, const Vector2f& position, c
 
 void Renderer::renderText(TextContext& context) {
     text_renderer->addText(context);
+}
+
+void Renderer::renderSquare(SquareContext& context) {
+    squares.push_back(context);
+}
+
+void Renderer::render() {
+    SDL_FRect rect{};
+    (void) SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+    for (const SquareContext& context : squares) {
+        rect.w = context.scale * Game::TILE_SIZE_IN_PIXELS;
+        rect.h = context.scale * Game::TILE_SIZE_IN_PIXELS;
+        rect.x = context.position.x;
+        rect.y = context.position.y;
+        !context.filled ? (void) SDL_RenderRect(renderer, &rect) : (void) SDL_RenderFillRect(renderer, &rect);
+    }
+    (void) SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    squares.clear();
 }

@@ -15,3 +15,9 @@ struct TextContext {
     std::string text;
     Vector2i position;
 };
+
+struct SquareContext {
+    bool filled = false;
+    float scale = 1;
+    Vector2i position{};
+};

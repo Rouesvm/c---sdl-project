@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
+#include <vector>
 
 #include "Context.hpp"
 #include "math/Vectors.hpp"
@@ -12,6 +13,8 @@ struct Texture {
 
 class TextRenderer;
 class Renderer {
+    private:
+        std::vector<SquareContext> squares;
     private:
         SDL_Renderer* renderer;
     public:
@@ -27,6 +30,9 @@ class Renderer {
         void renderTexture(const Texture*, RenderContext&);
         void renderTexture(const Texture*, const Vector2f& position, const Vector2f& size);
         void renderText(TextContext&);
+        void renderSquare(SquareContext&);
+
+        void render();
 
         SDL_Renderer* getRenderer();
 };

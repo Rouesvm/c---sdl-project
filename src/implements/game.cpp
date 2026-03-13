@@ -73,12 +73,18 @@ void Game::render() {
             string += "\n  Storage: " + std::to_string(slot.amount);
             string += "\n  Item ID: " + std::to_string(slot.item_id);
         }
-        
+
         TextContext storageContext{
             string,
             Math::toRoundedVector2i(INPUT_STATE.mousePosition())
         };
 
+        SquareContext squareContext{
+            false,
+            1 * renderer.zoom,
+            Math::toRoundedVector2i(((tilePosition * Game::TILE_SIZE_IN_PIXELS) - CLIENT_STATE.cameraPosition()) * renderer.zoom)
+        };
+        renderer.renderSquare(squareContext);
         renderer.renderText(storageContext);
     }
 
@@ -93,6 +99,7 @@ void Game::render() {
 
     renderer.renderText(debugContext);
     renderer.renderTexture(texture, position, PLAYER_SIZE);
+    renderer.render();
 
     window_renderer.present();
 }
