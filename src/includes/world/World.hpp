@@ -12,11 +12,15 @@
 class RenderContext;
 class Renderer;
 class World {
+    public:
+        int estimated_rendered_tiles = 0;
+        int ticking_machines = 0;
     private:
         std::unordered_map<Vector2i, Tile> tiles{};
         std::unordered_map<Vector2i, Machine> machines{};
     private:
         std::vector<TileSettings> tile_settings{};
+        std::vector<MachineType> machine_type{};
     public:
         std::array<uint8_t, 128> textures{};
 
@@ -36,9 +40,13 @@ class World {
     public:
         World();
     public:
+        const Machine* getMachine(const Vector2i& position);
+
+        Tile* getTile(const Vector2i& position);
+        Tile* getMainTile(Vector2i* position);
         void addTile(const Vector2i& position, Tile tile);
         void removeTile(const Vector2i& position);
-
+    public:
         void renderTile(Renderer& renderer, RenderContext& renderContext, const Vector2i& position);
         void render(Renderer& renderer);
         

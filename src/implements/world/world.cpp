@@ -10,15 +10,8 @@
 #include "world/World.hpp"
 
 World::World() {
-    tile_settings.push_back(TileSettings{
-    });
-    tile_settings.push_back(TileSettings{
-        true,
-        true,
-        2, 2,
-        2,
-        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
-    });
+    tile_settings.push_back(TileSettings{});
+
     tile_settings.push_back(TileSettings{
         true,
         true,
@@ -26,13 +19,86 @@ World::World() {
         2,
         {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
+
     tile_settings.push_back(TileSettings{
+        true,
+        true,
+        2, 2,
+        2,
+        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+    });
+
+    tile_settings.push_back(TileSettings{});
+
+    tile_settings.push_back(TileSettings{
+        true,
+        false,
+        1, 1,
+        2,
+        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+    });
+
+    machine_type.push_back({});
+    machine_type.push_back({});
+    machine_type.push_back({});
+    machine_type.push_back({});
+
+    machine_type.push_back({
+        [](double deltaTime, Machine& machine) {
+            machine.ticks += deltaTime;
+            if (machine.ticks >= 1) {
+                machine.ticks = 0;
+
+                Resource& firstSlot = machine.slots.front();
+                firstSlot.amount += 1;
+            }
+        }
     });
 }
 
+Tile* World::getTile(const Vector2i& position) {
+    auto it = tiles.find(position);
+    if (it == tiles.end())
+        return nullptr;
+    return &it->second;
+}
+
+Tile* World::getMainTile(Vector2i* position) {
+    const Vector2i main{*position};
+
+    Tile* tile = getTile(main);
+    if (tile == nullptr) 
+        return nullptr;
+
+    if (tile->isMultiTile()) {
+        Vector2i newPosition = tile->getMainTile(main);
+        position->x = newPosition.x;
+        position->y = newPosition.y;
+    }
+
+    auto it = tiles.find(*position);
+    if (it == tiles.end())
+        return tile;
+
+    return &it->second;
+}
+
+const Machine* World::getMachine(const Vector2i& position) {
+    Vector2i mainPosition = position;
+    Tile* main = getMainTile(&mainPosition);
+    if (main == nullptr) 
+        return nullptr;
+
+    auto it = machines.find(mainPosition);
+    if (it == nullptr) 
+        return nullptr;
+
+    return &it->second;
+}
+
 void World::addTile(const Vector2i& position, Tile tile) {
-   auto it = tiles.find(position);
-    if (it != tiles.end() && it->second.isSolid())
+    auto main = tiles.find(position);
+    if (main != tiles.end() && main->second.isSolid())
         return;
 
     Tile& current = tiles[position];
@@ -61,25 +127,21 @@ void World::addTile(const Vector2i& position, Tile tile) {
 
     current = std::move(tile);
     if (setting.is_machine) {
-        machines.emplace(position, setting.inventory_size);
+        const MachineType& machineType = tile.id < tile_settings.size() ? machine_type[tile.id] : machine_type[0];
+        auto& machine = machines.emplace(position, setting.inventory_size).first->second;
+        if (machineType.update != nullptr)
+            machine.update = machineType.update;
     }
 }
 
 void World::removeTile(const Vector2i& position) {
-    auto it = tiles.find(position);
-    if (it == tiles.end())
-        return;
 
     Vector2i main = position;
-
-    if (it->second.isMultiTile())
-        main = it->second.getMainTile(position);
-
-    it = tiles.find(main);
-    if (it == tiles.end())
+    const Tile* tile = getMainTile(&main);
+    if (tile == nullptr)
         return;
 
-    int mainID = it->second.id;
+    int mainID = tile->id;
     const TileSettings& setting = mainID < tile_settings.size() ? tile_settings[mainID] : tile_settings[0];
     if (setting.is_multi_tiled) {
         for (int x = 0; x < setting.size_x; x++) {
@@ -215,14 +277,14 @@ void World::render(Renderer& renderer) {
         } 
     }
 
-    TextContext text{std::to_string(estimatedRenderedTiles) + "\n" + "Ticking Machines: " + std::to_string(machines.size()), {0, 16}};
-    renderer.renderText(text);
+    ticking_machines = machines.size();
+    estimated_rendered_tiles = estimatedRenderedTiles;
 }   
 
 void World::update(double deltaTime) {
     for (auto& [position, machine] : machines) {
         if (machine.update != nullptr) {
-            machine.update(deltaTime);
+            machine.update(deltaTime, machine);
         }
     }
 }

@@ -51,7 +51,7 @@ class Game {
         static constexpr inline double PHYSICS_STEP = 1 / 60.0;
         static constexpr inline double FRAME_DURATION = 1 / 60.0;
 
-        static constexpr Vector2f PLAYER_SIZE{8, 8};
+        static constexpr Vector2f PLAYER_SIZE{64, 64};
         static constexpr Vector2f HALF_SIZE{PLAYER_SIZE.x / 2, PLAYER_SIZE.y / 2};
     private:
         static InputState INPUT_STATE;

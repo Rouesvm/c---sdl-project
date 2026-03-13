@@ -1,8 +1,11 @@
 #pragma once
 
-#include "math/Vectors.hpp"
 #include <cstdint>
 #include <vector>
+#include <functional>
+
+#include "math/Vectors.hpp"
+#include "world/storage/Inventory.hpp"
 
 struct Tile {
     uint16_t id : 8 = 0;
@@ -79,4 +82,10 @@ struct TileSettings {
     uint8_t inventory_size = 0;
 
     std::vector<TileIO> ios{};
+
+};
+
+class Machine;
+struct MachineType {
+    std::function<void(double, Machine&)> update;
 };

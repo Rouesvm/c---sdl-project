@@ -32,6 +32,7 @@ Game::Game(): window_renderer("game"), camera(), world() {
     ASSET_MANAGER.insertTexture("stone", "asset/furnace-2.png");
     ASSET_MANAGER.insertTexture("furnace", "asset/furnace.png");
     ASSET_MANAGER.insertTexture("convenyor", "asset/conveyor-2.png");
+    ASSET_MANAGER.insertTexture("drill", "asset/furnace.png");
     int finalSize = ASSET_MANAGER.storedTextureSize();
 
     for (int i = 0; i < finalSize - start; i++) {
@@ -50,20 +51,46 @@ void Game::render() {
         texture = ASSET_MANAGER.getTexture("pickaxe_clicked");
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
-    TextContext context{
-        "FPS: 0 Rotation: " + std::to_string(INPUT_STATE.currentRotation()),
+    const Vector2f tilePosition = Math::floorDiv(
+        INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
+        + CLIENT_STATE.cameraPosition(), 
+        Game::TILE_SIZE_IN_PIXELS
+    );
+
+    const Vector2i tileIntPosition = Math::toRoundedVector2i(tilePosition);
+    const Machine* machine = world.getMachine(tileIntPosition);
+    
+    if (machine != nullptr) {
+        std::string string;
+        string += " x: " + std::to_string(tileIntPosition.x); 
+        string += " y: " + std::to_string(tileIntPosition.y);
+        string += "\n Storage: " + std::to_string(machine->slots[0].amount);
+        TextContext storageContext{
+            string,
+            Math::toRoundedVector2i(INPUT_STATE.mousePosition())
+        };
+
+        renderer.renderText(storageContext);
+    }
+
+    std::string debugText;
+    debugText += "FPS: 0 \nRotation: " + std::to_string(INPUT_STATE.currentRotation()) + '\n';
+    debugText += "Rendered Tiles: " + std::to_string(world.estimated_rendered_tiles) + '\n';
+    debugText += "Ticking Machines: " + std::to_string(world.ticking_machines);
+    TextContext debugContext{
+        debugText,
         {0, 0}
     };
 
-    renderer.renderText(context);
-    renderer.renderTexture(texture, position, PLAYER_SIZE * 8);
+    renderer.renderText(debugContext);
+    renderer.renderTexture(texture, position, PLAYER_SIZE);
 
     window_renderer.present();
 }
 
 void Game::update(double deltaTime) {
     window_renderer.update();
-    position = INPUT_STATE.mousePosition() - HALF_SIZE * Game::TILE_SIZE_IN_PIXELS;
+    position = INPUT_STATE.mousePosition() - HALF_SIZE;
 
     camera.update(CLIENT_STATE.windowSize(), player_position, deltaTime);
 
@@ -146,6 +173,7 @@ void Game::poll() {
             switch (event.key.key) {
                 case SDLK_1: block_id = 1; break;
                 case SDLK_2: block_id = 3; break;
+                case SDLK_3: block_id = 4; break;
             }
         }
     }
