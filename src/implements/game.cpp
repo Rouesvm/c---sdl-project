@@ -14,6 +14,7 @@
 #include "player/Camera.hpp"
 #include "renderer/Context.hpp"
 #include "renderer/Renderer.hpp"
+#include "world/objects/Tile.hpp"
 
 #include "Game.hpp"
 
@@ -64,7 +65,15 @@ void Game::render() {
         std::string string;
         string += " x: " + std::to_string(tileIntPosition.x); 
         string += " y: " + std::to_string(tileIntPosition.y);
-        string += "\n Storage: " + std::to_string(machine->slots[0].amount);
+
+        for (int i = 0; i < machine->slots.size(); i++) {
+            string += "\n Slot " + std::to_string(i) + ":";
+
+            const Resource& slot = machine->slots[i];
+            string += "\n  Storage: " + std::to_string(slot.amount);
+            string += "\n  Item ID: " + std::to_string(slot.item_id);
+        }
+        
         TextContext storageContext{
             string,
             Math::toRoundedVector2i(INPUT_STATE.mousePosition())
