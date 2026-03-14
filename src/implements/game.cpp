@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <deque>
 #include <memory>
 #include <string>
 #include <thread>
@@ -98,7 +100,8 @@ void Game::render() {
     }
 
     std::string debugText;
-    debugText += "FPS: 0 \nRotation: " + std::to_string(INPUT_STATE.currentRotation()) + '\n';
+    debugText += "FPS: " + std::to_string(average_fps) + '\n';
+    debugText += "Rotation: " + std::to_string(INPUT_STATE.currentRotation()) + '\n';
     debugText += "Rendered Tiles: " + std::to_string(world.estimated_rendered_tiles) + '\n';
     debugText += "Ticking Machines: " + std::to_string(world.ticking_machines);
     TextContext debugContext{
@@ -238,6 +241,9 @@ void Game::loop() {
 
     double accumulator = 0.0;
 
+    int framesRendered = 0;
+    double fpsTimer = 0.0;
+
     while (running) {
         const uint64_t frameStart = SDL_GetPerformanceCounter();
 
@@ -256,12 +262,18 @@ void Game::loop() {
         double alpha = accumulator / PHYSICS_STEP;
         this->render();
 
-        const double finalTime = static_cast<double>(SDL_GetPerformanceCounter() - frameStart) / frequency;
-        if (FRAME_DURATION > 0 && finalTime < FRAME_DURATION) {
-            preciseSleep(FRAME_DURATION - finalTime);
+        framesRendered++;
+        if (static_cast<double>(frameStart - fpsTimer) / frequency >= 1.0) {
+            average_fps = framesRendered;
+            framesRendered = 0;
+            fpsTimer = frameStart;
+        }
+        
+        const double frameTime = static_cast<double>(SDL_GetPerformanceCounter() - frameStart) / frequency;
+        if (FRAME_DURATION > 0 && frameTime < FRAME_DURATION) {
+            preciseSleep(FRAME_DURATION - frameTime);
         }  
     }
 
     (void) SDL_Quit();
-
 }

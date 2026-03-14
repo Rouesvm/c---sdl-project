@@ -57,12 +57,12 @@ class Game {
         static InputState INPUT_STATE;
         static ClientState CLIENT_STATE;
         static AssetManager ASSET_MANAGER;
-
+    private:
         WindowRenderer window_renderer;
 
         Camera camera;
         World world;
-
+    private:
         bool running = true;
 
         Vector2f position;
@@ -74,6 +74,7 @@ class Game {
         bool right = false;
 
         int block_id = 1;
+        int average_fps = 0;
     public:
         Game();
     public:
