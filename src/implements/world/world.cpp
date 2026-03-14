@@ -165,57 +165,13 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
     const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
     if (tile.id == 3) {
-        Vector2i coords[4] = {
-            { position.x,   position.y-1 }, // up
-            { position.x,   position.y+1 }, // down
-            { position.x-1, position.y   }, // left
-            { position.x+1, position.y   }  // right
-        };
-
-        auto tileA = tiles.find(coords[0]);
-        auto tileB = tiles.find(coords[1]);
-        auto tileC = tiles.find(coords[2]);
-        auto tileD = tiles.find(coords[3]);
-
-        bool A = false;
-        bool B = false;
-        bool C = false;
-        bool D = false;
-
-        if (tileA != tiles.end() && tileA->second.id == tile.id)
-            A = tileA->second.rotation == 2;
-
-        if (tileB != tiles.end() && tileB->second.id == tile.id)
-            B = tileB->second.rotation == 0;
-
-        if (tileC != tiles.end() && tileC->second.id == tile.id)
-            C = tileC->second.rotation == 1;
-
-        if (tileD != tiles.end() && tileD->second.id == tile.id)
-            D = tileD->second.rotation == 3;
-
-        switch (tile.rotation) {
-            case 0: A = true; B = false; break;
-            case 1: D = true; C = false; break;
-            case 2: B = true; A = false; break;
-            case 3: C = true; D = false; break;
-        }
-
-        int mask = 0;
-        if (A) mask |= 1;
-        if (B) mask |= 2;
-        if (C) mask |= 4;
-        if (D) mask |= 8;
-
-        const Vector2i& src = World::CONVEYOR_SRC_POSITIONS[mask];
-
-        TextContext text{std::to_string(mask), {static_cast<int>(renderContext.dst.x), static_cast<int>(renderContext.dst.y)}};
+        TextContext text{ std::to_string(tile.rotation), {static_cast<int>(renderContext.dst.x), static_cast<int>(renderContext.dst.y)} };
         renderer.renderText(text);
 
-        renderContext.src.x = src.x * 16;
-        renderContext.src.y = src.y * 16;
-            
-        renderer.renderTexture(blockTexture, renderContext);
+        renderContext.src.x = 0;
+        renderContext.rotation = tile.rotation * 90;
+        
+        renderer.renderTexture(blockTexture, renderContext); 
     } else if (tile.id != 0) {
         renderer.renderTexture(blockTexture, renderContext);
     } else {
@@ -269,6 +225,8 @@ void World::render(Renderer& renderer) {
 
             renderContext.src.x = 0;
             renderContext.src.y = 0;
+            renderContext.rotation = 0;
+            renderContext.flipped = false;
 
             estimatedRenderedTiles++;
             renderer.renderTexture(dirt, renderContext);

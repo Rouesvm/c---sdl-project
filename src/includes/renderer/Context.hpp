@@ -9,6 +9,8 @@
 struct RenderContext {
     SDL_FRect src;
     SDL_FRect dst;
+    bool flipped = false;
+    int rotation = 0;
 };
 
 struct TextContext {
