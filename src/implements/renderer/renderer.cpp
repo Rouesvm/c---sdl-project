@@ -10,6 +10,8 @@
 
 #include "renderer/Renderer.hpp"
 #include "renderer/TextRenderer.hpp"
+#include <algorithm>
+#include <vector>
 
 Renderer::Renderer(SDL_Window* window) {
     this->renderer = SDL_CreateRenderer(window, nullptr);
@@ -59,15 +61,39 @@ void Renderer::renderSquare(SquareContext& context) {
 }
 
 void Renderer::render() {
-    SDL_FRect rect{};
-    (void) SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+    int reserveSize = 0;
     for (const SquareContext& context : squares) {
-        rect.w = context.scale * Game::TILE_SIZE_IN_PIXELS;
-        rect.h = context.scale * Game::TILE_SIZE_IN_PIXELS;
-        rect.x = context.position.x;
-        rect.y = context.position.y;
-        !context.filled ? (void) SDL_RenderRect(renderer, &rect) : (void) SDL_RenderFillRect(renderer, &rect);
+        if (context.filled) reserveSize++;
+        else reserveSize += 4;
     }
-    (void) SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+
+    rectangles.clear();
+    rectangles.reserve(reserveSize);
+
+    if (!squares.empty()) {
+        SDL_FRect rect{};
+
+        for (const SquareContext& context : squares) {
+            rect.w = context.size.x;
+            rect.h = context.size.y;
+            rect.x = context.position.x;
+            rect.y = context.position.y;
+        
+            if (context.filled) {
+                rectangles.push_back(rect);
+            } else {
+                float t = std::min(static_cast<float>(context.outline_size), rect.w * 0.5f);
+                rectangles.push_back({ rect.x, rect.y, rect.w, t });
+                rectangles.push_back({ rect.x, rect.y + rect.h - t, rect.w, t });
+                rectangles.push_back({ rect.x, rect.y, t, rect.h });
+                rectangles.push_back({ rect.x + rect.w - t, rect.y, t, rect.h });
+            }
+        }
+        
+        (void) SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+        SDL_RenderFillRects(renderer, rectangles.data(), rectangles.size());
+        (void) SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    }
+
     squares.clear();
 }

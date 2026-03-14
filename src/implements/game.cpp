@@ -79,11 +79,20 @@ void Game::render() {
             Math::toRoundedVector2i(INPUT_STATE.mousePosition())
         };
 
+        Vector2i position{Math::toRoundedVector2i(
+            ((tilePosition * Game::TILE_SIZE_IN_PIXELS) - CLIENT_STATE.cameraPosition()) * renderer.zoom
+        )};
+
         SquareContext squareContext{
             false,
-            1 * renderer.zoom,
-            Math::toRoundedVector2i(((tilePosition * Game::TILE_SIZE_IN_PIXELS) - CLIENT_STATE.cameraPosition()) * renderer.zoom)
+            Math::toVector2i(Vector2f{
+                renderer.zoom * Game::TILE_SIZE_IN_PIXELS,
+                renderer.zoom * Game::TILE_SIZE_IN_PIXELS
+            }),
+            position,
+            2
         };
+
         renderer.renderSquare(squareContext);
         renderer.renderText(storageContext);
     }

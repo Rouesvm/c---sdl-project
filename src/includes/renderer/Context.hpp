@@ -18,6 +18,7 @@ struct TextContext {
 
 struct SquareContext {
     bool filled = false;
-    float scale = 1;
+    Vector2i size{};
     Vector2i position{};
+    int outline_size = 1;
 };
