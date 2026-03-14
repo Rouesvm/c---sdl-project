@@ -28,7 +28,7 @@ class Renderer {
     public:
         Texture loadTexture(const std::string&);
 
-        void renderTexture(const Texture*, RenderContext&);
+        void renderTexture(const Texture*, const RenderContext&);
         void renderTexture(const Texture*, const Vector2f& position, const Vector2f& size);
         void renderText(TextContext&);
         void renderSquare(SquareContext&);

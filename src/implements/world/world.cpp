@@ -156,6 +156,25 @@ void World::removeTile(const Vector2i& position) {
     }
 }
 
+static constexpr Vector2i DIR[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
+
+static int rotateIndex(int localIndex, int rot) {
+    return (localIndex + rot) & 3;
+}
+
+static bool tileConnects(World& world, Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {
+    constexpr Vector2i offsets[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
+    Vector2i nPos = { position.x + offsets[neighbourIndex].x,
+                      position.y + offsets[neighbourIndex].y };
+    Tile* n = world.getTile(nPos);
+    if (!n || n->id != tileId) return false;
+    Vector2i nOut = { nPos.x + DIR[n->rotation].x,
+                      nPos.y + DIR[n->rotation].y };
+    if (nOut.x == position.x && nOut.y == position.y) return true;
+    if (myOut.x == nPos.x    && myOut.y == nPos.y)    return true;
+    return false;
+}
+
 void World::renderTile(Renderer& renderer, RenderContext& renderContext, const Vector2i& position) {
     const auto& result = tiles.find(position);
     if (result == tiles.end()) return;
@@ -165,13 +184,49 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
     const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
     if (tile.id == 3) {
-        TextContext text{ std::to_string(tile.rotation), {static_cast<int>(renderContext.dst.x), static_cast<int>(renderContext.dst.y)} };
-        renderer.renderText(text);
+        Vector2i coords[4] = {
+            { position.x,   position.y-1 },
+            { position.x+1, position.y   },
+            { position.x,   position.y+1 },
+            { position.x-1, position.y   }
+        };
 
-        renderContext.src.x = 0;
-        renderContext.rotation = tile.rotation * 90;
+        int rotation = tile.rotation;
+
+        Vector2i myOut = { position.x + DIR[rotation].x,
+                        position.y + DIR[rotation].y };
+
+        bool behind = tileConnects(*this, position, myOut, rotateIndex(2, rotation), 3);
+        bool sideA  = tileConnects(*this, position, myOut, rotateIndex(1, rotation), 3);
+        bool sideB  = tileConnects(*this, position, myOut, rotateIndex(3, rotation), 3);
+
+        int inputs = (behind ? 1 : 0) + (sideA ? 1 : 0) + (sideB ? 1 : 0);
+
+        int frame;
+        if      (inputs >= 3)    frame = 3;
+        else if (inputs == 2)    frame = 2;
+        else if (sideA || sideB) frame = 1;
+        else frame = 0;
         
-        renderer.renderTexture(blockTexture, renderContext); 
+        int frameRotation = rotation;
+
+        if (frame == 1) {
+            if      (sideA && !sideB) frameRotation = (rotation + 3) & 3;
+            else if (!sideA && sideB) frameRotation = (rotation + 2) & 3;
+        } else if (frame == 2) {
+            if      (!behind) frameRotation = (rotation + 0) & 3;
+            else if (!sideA)  frameRotation = (rotation + 1) & 3;
+            else if (!sideB)  frameRotation = (rotation + 3) & 3;
+        }
+
+        constexpr int FRAME_W = 16, FRAME_H = 16;
+
+        renderContext.src.x    = frame * FRAME_W;
+        renderContext.src.y    = 0;
+
+        renderContext.rotation = (frameRotation * 90);
+
+        renderer.renderTexture(blockTexture, renderContext);
     } else if (tile.id != 0) {
         renderer.renderTexture(blockTexture, renderContext);
     } else {

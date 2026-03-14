@@ -10,6 +10,7 @@ struct RenderContext {
     SDL_FRect src;
     SDL_FRect dst;
     bool flipped = false;
+    bool flippedVertical = false;
     int rotation = 0;
 };
 

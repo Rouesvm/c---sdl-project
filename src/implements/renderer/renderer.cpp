@@ -43,11 +43,16 @@ Texture Renderer::loadTexture(const std::string& filename) {
     };
 }
 
-void Renderer::renderTexture(const Texture* texture, RenderContext& context) {
+void Renderer::renderTexture(const Texture* texture, const RenderContext& context) {
     if (context.rotation == 0) 
         (void) SDL_RenderTexture(renderer, texture->texture, &context.src, &context.dst);
     else {
-        (void) SDL_RenderTextureRotated(renderer, texture->texture, &context.src, &context.dst, context.rotation, {}, context.flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+        SDL_FlipMode flip = SDL_FLIP_NONE;
+        if (context.flipped) {
+            flip = SDL_FlipMode::SDL_FLIP_HORIZONTAL;
+            if (context.flippedVertical) flip = SDL_FlipMode::SDL_FLIP_VERTICAL;
+        }
+        (void) SDL_RenderTextureRotated(renderer, texture->texture, &context.src, &context.dst, context.rotation, nullptr, flip);
     }
 } 
 
