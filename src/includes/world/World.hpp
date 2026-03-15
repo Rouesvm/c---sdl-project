@@ -40,7 +40,8 @@ class World {
     public:
         World();
     public:
-        const Machine* getMachine(const Vector2i& position);
+        Machine* getMachine(const Vector2i& position);
+        const Machine* getConstMachine(const Vector2i& position);
 
         Tile* getTile(const Vector2i& position);
         Tile* getMainTile(Vector2i* position);

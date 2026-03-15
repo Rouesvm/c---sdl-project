@@ -1,6 +1,7 @@
 #include <functional>
 #include <vector>
 
+#include "math/Vectors.hpp"
 #include "world/objects/Tile.hpp"
 
 class Machine {
@@ -12,8 +13,10 @@ class Machine {
         double ticks = 0;
         
         bool active = false;
+
+        Vector2i position{};
     public:
         Machine(int inventory_size): slots(inventory_size) {};
     public:
-        std::function<void(double, Machine&)> update;
+        std::function<void(double, World&, Machine&)> update;
 };

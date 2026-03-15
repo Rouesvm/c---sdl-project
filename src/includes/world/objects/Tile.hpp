@@ -85,7 +85,8 @@ struct TileSettings {
 
 };
 
+class World;
 class Machine;
 struct MachineType {
-    std::function<void(double, Machine&)> update;
+    std::function<void(double, World&, Machine&)> update;
 };

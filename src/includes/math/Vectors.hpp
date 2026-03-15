@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 
 struct Vector2f {
@@ -124,28 +125,52 @@ struct Vector2i {
         return *this == b;
     }
 
-    Vector2i operator- (const Vector2i& b) const {
-        return Vector2i(x - b.x, y - b.y);
-    }
-
-    Vector2i operator+ (const Vector2i& b) const {
+    Vector2i add(const Vector2i& b) const {
         return Vector2i(x + b.x, y + b.y);
     }
 
-    Vector2i operator* (const Vector2i& b) const {
+    Vector2i minus(const Vector2i& b) const {
+        return Vector2i(x - b.x, y - b.y);
+    }
+
+    Vector2i multiply(const Vector2i& b) const {
         return Vector2i(x * b.x, y * b.y);
     }
 
-    Vector2i operator/ (const Vector2i& b) const {
-        return Vector2i(x / b.x, y / b.y);
-    }
-
-    Vector2i operator* (int b) const {
+    Vector2i multiply(int b) const {
         return Vector2i(x * b, y * b);
     }
 
-    Vector2i operator/ (int b) const {
+    Vector2i divide(const Vector2i& b) const {
+        return Vector2i(x / b.x, y / b.y);
+    }
+
+    Vector2i divide(int b) const {
         return Vector2i(x / b, y / b);
+    }
+
+    Vector2i operator- (const Vector2i& b) const {
+        return minus(b);
+    }
+
+    Vector2i operator+ (const Vector2i& b) const {
+        return add(b);
+    }
+
+    Vector2i operator* (const Vector2i& b) const {
+        return multiply(b);
+    }
+
+    Vector2i operator/ (const Vector2i& b) const {
+        return divide(b);
+    }
+
+    Vector2i operator* (int b) const {
+        return multiply(b);
+    }
+
+    Vector2i operator/ (int b) const {
+        return divide(b);
     }
 
     Vector2i pow(const int& b) const {

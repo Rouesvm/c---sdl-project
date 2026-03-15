@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <string>
 
 #include "Game.hpp"
@@ -8,6 +9,8 @@
 #include "world/objects/Tile.hpp"
 
 #include "world/World.hpp"
+
+static constexpr Vector2i DIR[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 
 World::World() {
     tile_settings.push_back(TileSettings{});
@@ -28,7 +31,14 @@ World::World() {
         {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 
-    tile_settings.push_back(TileSettings{});
+    tile_settings.push_back(TileSettings{
+        true,
+        false,
+        1, 1,
+        1,
+        {}
+    });
+
 
     tile_settings.push_back(TileSettings{
         true,
@@ -41,16 +51,55 @@ World::World() {
     machine_type.push_back({});
     machine_type.push_back({});
     machine_type.push_back({});
-    machine_type.push_back({});
 
     machine_type.push_back({
-        [](double deltaTime, Machine& machine) {
+        [](double deltaTime, World& world, Machine& machine) {
+            const Tile* tile = world.getTile(machine.position);
+            if (tile == nullptr) return;
             machine.ticks += deltaTime;
+
+            const Vector2i& offset = DIR[tile->rotation];
+            const Vector2i offsetedPosition = machine.position.add(offset);
+
+            Machine* insert = world.getMachine(offsetedPosition);
+
+            if (machine.ticks < 1) return;
+
+            machine.ticks = 0;
+            if (insert == nullptr) return;
+
+            Resource& insertSlot = insert->slots.front();
+            Resource& thisSlot = machine.slots.front();
+            if (thisSlot.amount > 0) {
+                insertSlot.amount += 1;
+                thisSlot.amount -= 1;
+            }
+        }
+    });
+
+    machine_type.push_back({
+        [](double deltaTime, World& world, Machine& machine) {
+            machine.ticks += deltaTime;
+
             if (machine.ticks >= 1) {
                 machine.ticks = 0;
 
-                Resource& firstSlot = machine.slots.front();
-                firstSlot.amount += 1;
+                Resource& thisSlot = machine.slots.front();
+                thisSlot.amount += 1;
+
+                for (int i = 0; i < 4; i++) {
+                    const Vector2i& offset = DIR[i];
+                    const Vector2i offsetedPosition = machine.position.add(offset);
+
+                    Machine* insert = world.getMachine(offsetedPosition);
+                    if (insert == nullptr) continue;
+
+                    Resource& insertSlot = insert->slots.front();
+                    if (thisSlot.amount > 0) {
+                        insertSlot.amount += 1;
+                        thisSlot.amount -= 1;
+                    }
+                }
             }
         }
     });
@@ -83,7 +132,20 @@ Tile* World::getMainTile(Vector2i* position) {
     return &it->second;
 }
 
-const Machine* World::getMachine(const Vector2i& position) {
+Machine* World::getMachine(const Vector2i& position) {
+    Vector2i mainPosition = position;
+    Tile* main = getMainTile(&mainPosition);
+    if (main == nullptr) 
+        return nullptr;
+
+    auto it = machines.find(mainPosition);
+    if (it == nullptr) 
+        return nullptr;
+
+    return &it->second;
+}
+
+const Machine* World::getConstMachine(const Vector2i& position) {
     Vector2i mainPosition = position;
     Tile* main = getMainTile(&mainPosition);
     if (main == nullptr) 
@@ -129,6 +191,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
     if (setting.is_machine) {
         const MachineType& machineType = tile.id < tile_settings.size() ? machine_type[tile.id] : machine_type[0];
         auto& machine = machines.emplace(position, setting.inventory_size).first->second;
+        machine.position = position;
         if (machineType.update != nullptr)
             machine.update = machineType.update;
     }
@@ -156,22 +219,22 @@ void World::removeTile(const Vector2i& position) {
     }
 }
 
-static constexpr Vector2i DIR[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
-
 static int rotateIndex(int localIndex, int rot) {
     return (localIndex + rot) & 3;
 }
 
-static bool tileConnects(World& world, Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {
-    constexpr Vector2i offsets[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
-    Vector2i nPos = { position.x + offsets[neighbourIndex].x,
-                      position.y + offsets[neighbourIndex].y };
-    Tile* n = world.getTile(nPos);
-    if (!n || n->id != tileId) return false;
-    Vector2i nOut = { nPos.x + DIR[n->rotation].x,
-                      nPos.y + DIR[n->rotation].y };
+static bool tileConnects(World& world, Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {    
+    Vector2i tilePos = { position.x + DIR[neighbourIndex].x,
+                      position.y + DIR[neighbourIndex].y };
+
+    Tile* tile = world.getTile(tilePos);
+    if (!tile) return false;
+
+    Vector2i nOut = { tilePos.x + DIR[tile->rotation].x,
+                      tilePos.y + DIR[tile->rotation].y };
+
     if (nOut.x == position.x && nOut.y == position.y) return true;
-    if (myOut.x == nPos.x    && myOut.y == nPos.y)    return true;
+    if (myOut.x == tilePos.x    && myOut.y == tilePos.y) return true;
     return false;
 }
 
@@ -184,45 +247,36 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
     const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
     if (tile.id == 3) {
-        Vector2i coords[4] = {
-            { position.x,   position.y-1 },
-            { position.x+1, position.y   },
-            { position.x,   position.y+1 },
-            { position.x-1, position.y   }
-        };
+        Vector2i myOut{ position.x + DIR[tile.rotation].x,
+                        position.y + DIR[tile.rotation].y };
 
-        int rotation = tile.rotation;
+        bool behind = tileConnects(*this, position, myOut, rotateIndex(2, tile.rotation), 3);
+        bool sideA  = tileConnects(*this, position, myOut, rotateIndex(1, tile.rotation), 3);
+        bool sideB  = tileConnects(*this, position, myOut, rotateIndex(3, tile.rotation), 3);
 
-        Vector2i myOut = { position.x + DIR[rotation].x,
-                        position.y + DIR[rotation].y };
+        uint8_t inputs = (behind ? 1 : 0) + (sideA ? 1 : 0) + (sideB ? 1 : 0);
+        uint8_t frame = 0;
 
-        bool behind = tileConnects(*this, position, myOut, rotateIndex(2, rotation), 3);
-        bool sideA  = tileConnects(*this, position, myOut, rotateIndex(1, rotation), 3);
-        bool sideB  = tileConnects(*this, position, myOut, rotateIndex(3, rotation), 3);
-
-        int inputs = (behind ? 1 : 0) + (sideA ? 1 : 0) + (sideB ? 1 : 0);
-
-        int frame;
         if      (inputs >= 3)    frame = 3;
         else if (inputs == 2)    frame = 2;
         else if (sideA || sideB) frame = 1;
-        else frame = 0;
         
-        int frameRotation = rotation;
+        int frameRotation = tile.rotation;
 
         if (frame == 1) {
-            if      (sideA && !sideB) frameRotation = (rotation + 3) & 3;
-            else if (!sideA && sideB) frameRotation = (rotation + 2) & 3;
+            if      (sideA && !sideB) frameRotation = (tile.rotation + 3) & 3;
+            else if (!sideA && sideB) frameRotation = (tile.rotation + 2) & 3;
         } else if (frame == 2) {
-            if      (!behind) frameRotation = (rotation + 0) & 3;
-            else if (!sideA)  frameRotation = (rotation + 1) & 3;
-            else if (!sideB)  frameRotation = (rotation + 3) & 3;
+            if      (!behind) frameRotation = (tile.rotation + 2) & 3;
+            else if (!sideA)  frameRotation = (tile.rotation + 1) & 3;
+            else if (!sideB)  frameRotation = (tile.rotation + 3) & 3;
         }
 
-        constexpr int FRAME_W = 16, FRAME_H = 16;
+        TextContext text{std::to_string(sideA) + std::to_string(sideB) + std::to_string(behind), Math::toVector2i(Vector2f{renderContext.dst.x, renderContext.dst.y})};
+        renderer.renderText(text);
 
-        renderContext.src.x    = frame * FRAME_W;
-        renderContext.src.y    = 0;
+        renderContext.src.x = frame * Game::TILE_SIZE_IN_PIXELS;
+        renderContext.src.y = 0;
 
         renderContext.rotation = (frameRotation * 90);
 
@@ -297,7 +351,7 @@ void World::render(Renderer& renderer) {
 void World::update(double deltaTime) {
     for (auto& [position, machine] : machines) {
         if (machine.update != nullptr) {
-            machine.update(deltaTime, machine);
+            machine.update(deltaTime, *this, machine);
         }
     }
 }
