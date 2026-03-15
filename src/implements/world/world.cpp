@@ -80,25 +80,23 @@ World::World() {
     machine_type.push_back({
         [](double deltaTime, World& world, Machine& machine) {
             machine.ticks += deltaTime;
+            if (machine.ticks < 1) return;
+            machine.ticks = 0;
 
-            if (machine.ticks >= 1) {
-                machine.ticks = 0;
+            Resource& thisSlot = machine.slots.front();
+            thisSlot.amount += 1;
 
-                Resource& thisSlot = machine.slots.front();
-                thisSlot.amount += 1;
+            for (int i = 0; i < 4; i++) {
+                const Vector2i& offset = DIR[i];
+                const Vector2i offsetedPosition = machine.position.add(offset);
 
-                for (int i = 0; i < 4; i++) {
-                    const Vector2i& offset = DIR[i];
-                    const Vector2i offsetedPosition = machine.position.add(offset);
+                Machine* insert = world.getMachine(offsetedPosition);
+                if (insert == nullptr) continue;
 
-                    Machine* insert = world.getMachine(offsetedPosition);
-                    if (insert == nullptr) continue;
-
-                    Resource& insertSlot = insert->slots.front();
-                    if (thisSlot.amount > 0) {
-                        insertSlot.amount += 1;
-                        thisSlot.amount -= 1;
-                    }
+                Resource& insertSlot = insert->slots.front();
+                if (thisSlot.amount > 0) {
+                    insertSlot.amount += 1;
+                    thisSlot.amount -= 1;
                 }
             }
         }
@@ -234,7 +232,7 @@ static bool tileConnects(World& world, Vector2i position, Vector2i myOut, int ne
                       tilePos.y + DIR[tile->rotation].y };
 
     if (nOut.x == position.x && nOut.y == position.y) return true;
-    if (myOut.x == tilePos.x    && myOut.y == tilePos.y) return true;
+    if (myOut.x == tilePos.x && myOut.y == tilePos.y) return true;
     return false;
 }
 
