@@ -245,12 +245,12 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
         int frameRotation = tile.rotation;
 
         if (frame == 1) {
-            if      (sideA && !sideB) frameRotation = (tile.rotation + 3) & 3;
-            else if (!sideA && sideB) frameRotation = (tile.rotation + 2) & 3;
+            if      (sideA && !sideB) frameRotation = rotateIndex(tile.rotation, 3);
+            else if (!sideA && sideB) frameRotation = rotateIndex(tile.rotation, 2);
         } else if (frame == 2) {
-            if      (!behind) frameRotation = (tile.rotation + 2) & 3;
-            else if (!sideA)  frameRotation = (tile.rotation + 1) & 3;
-            else if (!sideB)  frameRotation = (tile.rotation + 3) & 3;
+            if      (!behind) frameRotation = rotateIndex(tile.rotation, 2);
+            else if (!sideA)  frameRotation = rotateIndex(tile.rotation, 1);
+            else if (!sideB)  frameRotation = rotateIndex(tile.rotation, 3);
         }
 
         renderContext.src.x = frame * Game::TILE_SIZE_IN_PIXELS;
