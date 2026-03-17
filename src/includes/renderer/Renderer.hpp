@@ -14,11 +14,11 @@ struct Texture {
 class TextRenderer;
 class Renderer {
     private:
-        std::vector<SDL_FRect> rectangles;
+        std::vector<SDL_FRect> rectangles{};
     private:
-        SDL_Renderer* renderer;
+        SDL_Renderer* renderer = nullptr;
     public:
-        TextRenderer* text_renderer;
+        TextRenderer* text_renderer = nullptr;
     public:
         float zoom = 2.0f;
     public:

@@ -65,6 +65,7 @@ target_compile_options(engine PRIVATE
     -Wall
     -Werror
     -Wshadow
+    -Wstrict-aliasing
     -pedantic
 )
 

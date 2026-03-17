@@ -6,13 +6,13 @@
 #include "world/World.hpp"
 
 class InputState {
-    Vector2f MOUSE_POSITION;
+    Vector2f MOUSE_POSITION{};
 
-    bool IS_LEFT : 1;
-    bool MOUSE_DOWN : 1;
+    bool IS_LEFT : 1 = false;
+    bool MOUSE_DOWN : 1 = false;
 
-    bool KEY_UP : 1;
-    bool KEY_DOWN : 1;
+    bool KEY_UP : 1 = false;
+    bool KEY_DOWN : 1 = false;
 
     uint8_t rotation : 2 = 0;
 
@@ -34,8 +34,8 @@ class InputState {
 };
 
 class ClientState {
-    Vector2i WINDOW_SIZE;
-    Vector2f CAMERA_POSITION;
+    Vector2i WINDOW_SIZE{};
+    Vector2f CAMERA_POSITION{};
     public:
         const Vector2i& windowSize() const {return WINDOW_SIZE;}
         const Vector2f& cameraPosition() const {return CAMERA_POSITION;}
@@ -65,8 +65,8 @@ class Game {
     private:
         bool running = true;
 
-        Vector2f position;
-        Vector2f player_position;
+        Vector2f position{};
+        Vector2f player_position{};
 
         bool up = false;
         bool down = false;

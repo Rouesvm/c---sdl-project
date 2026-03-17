@@ -18,5 +18,5 @@ class Machine {
     public:
         Machine(int inventorySize): slots(inventorySize) {};
     public:
-        std::function<void(double, World&, Machine&)> update;
+        std::function<void(double, World&, Machine&)> update{};
 };
