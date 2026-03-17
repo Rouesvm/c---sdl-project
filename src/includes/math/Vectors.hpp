@@ -11,32 +11,56 @@ struct Vector2f {
     constexpr Vector2f(float p_x, float p_y):x(p_x), y(p_y) {}
     constexpr Vector2f(int p_x, int p_y):x(static_cast<float>(p_x)), y(static_cast<float>(p_y)) {}
 
-    Vector2f operator- (const Vector2f& b) const {
-        return Vector2f(x - b.x, y - b.y);
-    }
-
-    Vector2f operator+ (const Vector2f& b) const {
+    
+    Vector2f add(const Vector2f& b) const {
         return Vector2f(x + b.x, y + b.y);
     }
 
-    Vector2f operator* (const Vector2f& b) const {
+    Vector2f minus(const Vector2f& b) const {
+        return Vector2f(x - b.x, y - b.y);
+    }
+
+    Vector2f multiply(const Vector2f& b) const {
         return Vector2f(x * b.x, y * b.y);
     }
 
-    Vector2f operator/ (const Vector2f& b) const {
-        return Vector2f(x / b.x, y / b.y);
-    }
-
-
-    Vector2f operator* (float b) const {
+    Vector2f multiply(float b) const {
         return Vector2f(x * b, y * b);
     }
 
-    Vector2f operator/ (float b) const {
+    Vector2f divide(const Vector2f& b) const {
+        return Vector2f(x / b.x, y / b.y);
+    }
+
+    Vector2f divide(float b) const {
         return Vector2f(x / b, y / b);
     }
 
-    Vector2f pow(const float& b) const {
+    Vector2f operator- (const Vector2f& b) const {
+        return minus(b);
+    }
+
+    Vector2f operator+ (const Vector2f& b) const {
+        return add(b);
+    }
+
+    Vector2f operator* (const Vector2f& b) const {
+        return multiply(b);
+    }
+
+    Vector2f operator/ (const Vector2f& b) const {
+        return divide(b);
+    }
+
+    Vector2f operator* (float b) const {
+        return multiply(b);
+    }
+
+    Vector2f operator/ (float b) const {
+        return divide(b);
+    }
+
+    Vector2f pow(float b) const {
         return Vector2f(std::pow(x, b), std::pow(y, b));
     }    
     

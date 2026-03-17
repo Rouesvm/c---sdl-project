@@ -54,8 +54,9 @@ void Game::render(double deltaTime) {
     } else texture = ASSET_MANAGER.getTexture("pickaxe");
 
     const Vector2f tilePosition = Math::floorDiv(
-        INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
-        + CLIENT_STATE.cameraPosition(), 
+        INPUT_STATE.mousePosition()
+            .divide(renderer.zoom)
+            .add(CLIENT_STATE.cameraPosition()), 
         Game::TILE_SIZE_IN_PIXELS
     );
 
@@ -82,7 +83,10 @@ void Game::render(double deltaTime) {
         };
 
         Vector2i squarePosition{Math::toRoundedVector2i(
-            ((tilePosition * Game::TILE_SIZE_IN_PIXELS) - CLIENT_STATE.cameraPosition()) * renderer.zoom
+            tilePosition
+                .multiply(Game::TILE_SIZE_IN_PIXELS)
+                .minus(CLIENT_STATE.cameraPosition())
+                .multiply(renderer.zoom)
         )};
 
         SquareContext squareContext{
@@ -125,13 +129,15 @@ void Game::update(double deltaTime) {
     CLIENT_STATE.setCameraPosition(camera.screen_position);
     CLIENT_STATE.setWindowSize(window_renderer.windowSize());
 
-    window_renderer.currentRenderer().zoom = camera.zoom;
+    Renderer& renderer = window_renderer.currentRenderer();
+    renderer.zoom = camera.zoom;
 
     world.update(deltaTime);
 
     const Vector2f tilePosition = Math::floorDiv(
-        INPUT_STATE.mousePosition() / window_renderer.currentRenderer().zoom
-        + CLIENT_STATE.cameraPosition(), 
+        INPUT_STATE.mousePosition()
+            .divide(renderer.zoom)
+            .add(CLIENT_STATE.cameraPosition()),
         Game::TILE_SIZE_IN_PIXELS
     );
 

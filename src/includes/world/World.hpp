@@ -22,7 +22,7 @@ class World {
         std::unordered_map<std::string, MachineLogic> machine_logic{};
         std::vector<TileSetting> tile_settings{};
     public:
-        std::array<uint8_t, 128> textures{};
+        std::array<uint8_t, 128> textures;
 
         static constexpr Vector2i TBLR_SRC_POSITIONS[16]{
             Vector2i(0,3), Vector2i(0,2), Vector2i(0,0), Vector2i(0,1),

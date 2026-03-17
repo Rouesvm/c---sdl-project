@@ -229,7 +229,6 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
     const Tile& tile = result->second;
 
     if (tile.isAir()) return;
-
     if (tile.id == 3) {
         const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
 
@@ -306,7 +305,6 @@ void World::render(Renderer& renderer) {
     };
 
     Vector2i position{};
-
     const Texture* dirt = manager.getTexture("dirt");
     for (int x = startX; x <= endX; x++) {
         position.x = x;
