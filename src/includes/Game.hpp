@@ -82,7 +82,7 @@ class Game {
         static const ClientState& clientState() {return CLIENT_STATE;};
         static const AssetManager& assetManager() {return ASSET_MANAGER;};
     private:
-        void render();
+        void render(double deltaTime);
         void poll();
         void update(double deltaTime);
         void tick(double deltaTime);

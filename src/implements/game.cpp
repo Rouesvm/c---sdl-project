@@ -40,7 +40,9 @@ Game::Game(): window_renderer("game"), camera(), world() {
     }
 }
 
-void Game::render() {
+void Game::render(double deltaTime) {
+    (void) deltaTime;
+
     window_renderer.clear();
 
     Renderer& renderer = window_renderer.currentRenderer();
@@ -65,7 +67,8 @@ void Game::render() {
         string += " x: " + std::to_string(tileIntPosition.x); 
         string += " y: " + std::to_string(tileIntPosition.y);
 
-        for (int i = 0; i < machine->slots.size(); i++) {
+        int machineSize = static_cast<int>(machine->slots.size());
+        for (int i = 0; i < machineSize; i++) {
             string += "\n Slot " + std::to_string(i) + ":";
 
             const Resource& slot = machine->slots[i];
@@ -257,7 +260,7 @@ void Game::loop() {
         }
 
         double alpha = accumulator / PHYSICS_STEP;
-        this->render();
+        this->render(alpha);
 
         framesRendered++;
         if (static_cast<double>(frameStart - fpsTimer) / frequency >= 1.0) {

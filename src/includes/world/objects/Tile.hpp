@@ -72,7 +72,7 @@ struct TileIO {
     uint8_t y = 0;
 };
 
-struct TileSettings {
+struct TileSetting {
     bool is_machine = false;
     bool is_multi_tiled = false;
 

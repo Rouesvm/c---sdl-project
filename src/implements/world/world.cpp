@@ -13,9 +13,9 @@
 static constexpr Vector2i DIR[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 
 World::World() {
-    tile_settings.push_back(TileSettings{});
+    tile_settings.push_back(TileSetting{});
 
-    tile_settings.push_back(TileSettings{
+    tile_settings.push_back(TileSetting{
         .is_machine = true,
         .is_multi_tiled = true,
         .size_x = 2, .size_y = 2,
@@ -23,7 +23,7 @@ World::World() {
         .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 
-    tile_settings.push_back(TileSettings{
+    tile_settings.push_back(TileSetting{
         .is_machine = true,
         .is_multi_tiled = true,
         .size_x = 2, .size_y = 2,
@@ -31,14 +31,14 @@ World::World() {
         .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 
-    tile_settings.push_back(TileSettings{
+    tile_settings.push_back(TileSetting{
         .is_machine = true,
         .inventory_size = 1,
         .ios = {},
         .machine_type = "conveyor"
     });
 
-    tile_settings.push_back(TileSettings{
+    tile_settings.push_back(TileSetting{
         .is_machine = true,
         .inventory_size = 2,
         .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}},
@@ -156,9 +156,9 @@ void World::addTile(const Vector2i& position, Tile tile) {
     if (main != tiles.end() && main->second.isSolid())
         return;
 
+    const TileSetting& setting = getTileSetting(tile.id);
     Tile& current = tiles[position];
 
-    const TileSettings& setting = tile.id < tile_settings.size() ? tile_settings[tile.id] : tile_settings[0];
     if (setting.is_multi_tiled) {
         for (int x = 0; x < setting.size_x; x++) {
             for (int y = 0; y < setting.size_y; y++) {
@@ -191,14 +191,12 @@ void World::addTile(const Vector2i& position, Tile tile) {
 }
 
 void World::removeTile(const Vector2i& position) {
-
     Vector2i main = position;
     const Tile* tile = getMainTile(&main);
-    if (tile == nullptr)
-        return;
+    if (!tile) return;
 
-    int mainID = tile->id;
-    const TileSettings& setting = mainID < tile_settings.size() ? tile_settings[mainID] : tile_settings[0];
+    const TileSetting& setting = getTileSetting(tile->id);
+
     if (setting.is_multi_tiled) {
         for (int x = 0; x < setting.size_x; x++) {
             for (int y = 0; y < setting.size_y; y++) {
@@ -216,12 +214,15 @@ static int rotateIndex(int localIndex, int rot) {
     return (localIndex + rot) & 3;
 }
 
-static bool tileConnects(World& world, Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {    
+bool World::tileConnects(Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {    
     Vector2i tilePos = { position.x + DIR[neighbourIndex].x,
                       position.y + DIR[neighbourIndex].y };
 
-    Tile* tile = world.getTile(tilePos);
+    Tile* tile = getTile(tilePos);
+
     if (!tile) return false;
+    const TileSetting& setting = getTileSetting(tile->id);
+    if (setting.is_machine) return true;
 
     Vector2i nOut = { tilePos.x + DIR[tile->rotation].x,
                       tilePos.y + DIR[tile->rotation].y };
@@ -243,9 +244,9 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
         Vector2i myOut{ position.x + DIR[tile.rotation].x,
                         position.y + DIR[tile.rotation].y };
 
-        bool behind = tileConnects(*this, position, myOut, rotateIndex(2, tile.rotation), 3);
-        bool sideA  = tileConnects(*this, position, myOut, rotateIndex(1, tile.rotation), 3);
-        bool sideB  = tileConnects(*this, position, myOut, rotateIndex(3, tile.rotation), 3);
+        bool behind = tileConnects(position, myOut, rotateIndex(2, tile.rotation), 3);
+        bool sideA  = tileConnects(position, myOut, rotateIndex(1, tile.rotation), 3);
+        bool sideB  = tileConnects(position, myOut, rotateIndex(3, tile.rotation), 3);
 
         uint8_t inputs = (behind ? 1 : 0) + (sideA ? 1 : 0) + (sideB ? 1 : 0);
         uint8_t frame = 0;

@@ -20,7 +20,7 @@ class World {
         std::unordered_map<Vector2i, Machine> machines{};
     private:
         std::unordered_map<std::string, MachineLogic> machine_logic{};
-        std::vector<TileSettings> tile_settings{};
+        std::vector<TileSetting> tile_settings{};
     public:
         std::array<uint8_t, 128> textures{};
 
@@ -40,13 +40,21 @@ class World {
     public:
         World();
     public:
+        const TileSetting& getTileSetting(int id) {
+            int tileSettingsSize = static_cast<int>(tile_settings.size());
+            return id < tileSettingsSize ? tile_settings[id] : tile_settings[0];
+        }
+    public:
         Machine* getMachine(const Vector2i& position);
         const Machine* getConstMachine(const Vector2i& position);
-
+    public:
         Tile* getTile(const Vector2i& position);
         Tile* getMainTile(Vector2i* position);
+    public:
         void addTile(const Vector2i& position, Tile tile);
         void removeTile(const Vector2i& position);
+    private:
+        bool tileConnects(Vector2i position, Vector2i myOut, int neighbourIndex, int tileId);
     public:
         void renderTile(Renderer& renderer, RenderContext& renderContext, const Vector2i& position);
         void render(Renderer& renderer);

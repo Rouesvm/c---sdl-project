@@ -61,6 +61,11 @@ set(SDLTTF_USE_HARFBUZZ OFF)
 add_subdirectory(${VENDOR_DIR}/SDL)
 add_subdirectory(${VENDOR_DIR}/SDL_ttf)
 
+target_compile_options(engine PRIVATE
+    -Wall
+    -Werror
+)
+
 target_link_libraries(engine 
   PRIVATE
     SDL3::SDL3 
