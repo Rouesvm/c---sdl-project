@@ -260,6 +260,7 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
     } else if (tile.offset > 0) {
         Vector2i tileOffset = tile.getOffset();
         blockTexture = Game::assetManager().getTexture(textures[tile.id]);
+        
         renderContext.src.x = tileOffset.x * 16;
         renderContext.src.y = tileOffset.y * 16;
     }

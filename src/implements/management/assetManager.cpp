@@ -29,6 +29,6 @@ const Texture* AssetManager::getTexture(const std::string& name) const {
 }
 
 const Texture* AssetManager::getTexture(int key) const {
-    if (key < 0 || key >= (int)textures.size()) return nullptr;
+    if (key < 0 || key >= static_cast<int>(textures.size())) return nullptr;
     return &textures[key];
 }
