@@ -41,9 +41,9 @@ struct Tile {
         return { x, y };
     }
 
-    Vector2i getMainTile(const Vector2i& pos) const {
-        Vector2i offset = getOffset();
-        return { pos.x - offset.x, pos.y - offset.y };
+    Vector2i getMainPosition(const Vector2i& pos) const {
+        Vector2i tileOffset = getOffset();
+        return { pos.x - tileOffset.x, pos.y - tileOffset.y };
     }
 
     void setMainTile(const Vector2i& main, const Vector2i& position) {

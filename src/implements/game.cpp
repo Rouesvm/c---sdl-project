@@ -81,7 +81,7 @@ void Game::render(double deltaTime) {
             Math::toRoundedVector2i(INPUT_STATE.mousePosition())
         };
 
-        Vector2i position{Math::toRoundedVector2i(
+        Vector2i squarePosition{Math::toRoundedVector2i(
             ((tilePosition * Game::TILE_SIZE_IN_PIXELS) - CLIENT_STATE.cameraPosition()) * renderer.zoom
         )};
 
@@ -91,7 +91,7 @@ void Game::render(double deltaTime) {
                 renderer.zoom * Game::TILE_SIZE_IN_PIXELS,
                 renderer.zoom * Game::TILE_SIZE_IN_PIXELS
             }),
-            position,
+            squarePosition,
             2
         };
 
@@ -136,10 +136,10 @@ void Game::update(double deltaTime) {
     );
 
     if (INPUT_STATE.isMouseDown()) {
-        const Vector2i position = Math::toVector2i(tilePosition);
+        const Vector2i tileIntPosition = Math::toVector2i(tilePosition);
         if (!INPUT_STATE.isLeft()) {
-            world.addTile(position, {static_cast<uint16_t>(block_id), 0, INPUT_STATE.currentRotation()});
-        } else world.removeTile(position);
+            world.addTile(tileIntPosition, {static_cast<uint16_t>(block_id), 0, INPUT_STATE.currentRotation()});
+        } else world.removeTile(tileIntPosition);
     }
 
     int speed = 1;

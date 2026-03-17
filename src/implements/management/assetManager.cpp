@@ -3,7 +3,7 @@
 #include "SDL3/SDL_render.h"
 #include "renderer/Renderer.hpp"
 
-AssetManager::AssetManager(Renderer& renderer): renderer(&renderer) {
+AssetManager::AssetManager(Renderer& currentRenderer): renderer(&currentRenderer) {
 
 }
 

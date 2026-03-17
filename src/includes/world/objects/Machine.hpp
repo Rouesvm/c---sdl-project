@@ -16,7 +16,7 @@ class Machine {
 
         Vector2i position{};
     public:
-        Machine(int inventory_size): slots(inventory_size) {};
+        Machine(int inventorySize): slots(inventorySize) {};
     public:
         std::function<void(double, World&, Machine&)> update;
 };

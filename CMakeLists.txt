@@ -64,6 +64,8 @@ add_subdirectory(${VENDOR_DIR}/SDL_ttf)
 target_compile_options(engine PRIVATE
     -Wall
     -Werror
+    -Wshadow
+    -pedantic
 )
 
 target_link_libraries(engine 

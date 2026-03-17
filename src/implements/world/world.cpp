@@ -109,13 +109,12 @@ Tile* World::getMainTile(Vector2i* position) {
     const Vector2i main{*position};
 
     Tile* tile = getTile(main);
-    if (tile == nullptr) 
-        return nullptr;
+    if (tile == nullptr) return tile;
 
     if (tile->isMultiTile()) {
-        Vector2i newPosition = tile->getMainTile(main);
-        position->x = newPosition.x;
-        position->y = newPosition.y;
+        Vector2i mainPosition = tile->getMainPosition(main);
+        position->x = mainPosition.x;
+        position->y = mainPosition.y;
     }
 
     auto it = tiles.find(*position);
@@ -139,16 +138,7 @@ Machine* World::getMachine(const Vector2i& position) {
 }
 
 const Machine* World::getConstMachine(const Vector2i& position) {
-    Vector2i mainPosition = position;
-    Tile* main = getMainTile(&mainPosition);
-    if (main == nullptr) 
-        return nullptr;
-
-    auto it = machines.find(mainPosition);
-    if (it == nullptr) 
-        return nullptr;
-
-    return &it->second;
+    return getMachine(position);
 }
 
 void World::addTile(const Vector2i& position, Tile tile) {
@@ -239,8 +229,9 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
     if (tile.isAir()) return;
 
-    const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
     if (tile.id == 3) {
+        const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
+
         Vector2i myOut{ position.x + DIR[tile.rotation].x,
                         position.y + DIR[tile.rotation].y };
 
@@ -266,9 +257,6 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
             else if (!sideB)  frameRotation = (tile.rotation + 3) & 3;
         }
 
-        TextContext text{std::to_string(sideA) + std::to_string(sideB) + std::to_string(behind), Math::toVector2i(Vector2f{renderContext.dst.x, renderContext.dst.y})};
-        renderer.renderText(text);
-
         renderContext.src.x = frame * Game::TILE_SIZE_IN_PIXELS;
         renderContext.src.y = 0;
 
@@ -276,6 +264,7 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
         renderer.renderTexture(blockTexture, renderContext);
     } else if (tile.id != 0) {
+        const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
         renderer.renderTexture(blockTexture, renderContext);
     } else {
         Vector2i tileOffset = tile.getOffset();
