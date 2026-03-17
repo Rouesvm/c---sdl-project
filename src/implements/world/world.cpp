@@ -16,38 +16,33 @@ World::World() {
     tile_settings.push_back(TileSettings{});
 
     tile_settings.push_back(TileSettings{
-        true,
-        true,
-        2, 2,
-        2,
-        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+        .is_machine = true,
+        .is_multi_tiled = true,
+        .size_x = 2, .size_y = 2,
+        .inventory_size = 2,
+        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 
     tile_settings.push_back(TileSettings{
-        true,
-        true,
-        2, 2,
-        2,
-        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+        .is_machine = true,
+        .is_multi_tiled = true,
+        .size_x = 2, .size_y = 2,
+        .inventory_size = 2,
+        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
     });
 
     tile_settings.push_back(TileSettings{
-        true,
-        false,
-        1, 1,
-        1,
-        {},
-        "conveyor"
+        .is_machine = true,
+        .inventory_size = 1,
+        .ios = {},
+        .machine_type = "conveyor"
     });
 
-
     tile_settings.push_back(TileSettings{
-        true,
-        false,
-        1, 1,
-        2,
-        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}},
-        "drill"
+        .is_machine = true,
+        .inventory_size = 2,
+        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}},
+        .machine_type = "drill"
     });
 
     machine_logic[""] = {[](double deltaTime, World& world, Machine& machine) {}};

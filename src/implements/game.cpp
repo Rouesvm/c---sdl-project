@@ -134,9 +134,9 @@ void Game::update(double deltaTime) {
 
     if (INPUT_STATE.isMouseDown()) {
         const Vector2i position = Math::toVector2i(tilePosition);
-        !INPUT_STATE.isLeft() ? 
-        world.addTile(position, {static_cast<uint16_t>(block_id), 0, INPUT_STATE.currentRotation()}) 
-        : world.removeTile(position);
+        if (!INPUT_STATE.isLeft()) {
+            world.addTile(position, {static_cast<uint16_t>(block_id), 0, INPUT_STATE.currentRotation()});
+        } else world.removeTile(position);
     }
 
     int speed = 1;
