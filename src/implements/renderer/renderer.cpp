@@ -66,43 +66,30 @@ void Renderer::renderText(TextContext& context) {
 }
 
 void Renderer::renderSquare(SquareContext& context) {
-    squares.push_back(context);
+    SDL_FRect rect{};
+    rect.w = context.size.x;
+    rect.h = context.size.y;
+    rect.x = context.position.x;
+    rect.y = context.position.y;
+
+    if (context.filled) {
+        rectangles.push_back(rect);
+    } else {
+        float t = std::min(static_cast<float>(context.outline_size), rect.w * 0.5f);
+        rectangles.reserve(rectangles.size() + 4);
+        rectangles.push_back({ rect.x, rect.y, rect.w, t });
+        rectangles.push_back({ rect.x, rect.y + rect.h - t, rect.w, t });
+        rectangles.push_back({ rect.x, rect.y, t, rect.h });
+        rectangles.push_back({ rect.x + rect.w - t, rect.y, t, rect.h });
+    }
 }
 
 void Renderer::render() {
-    int reserveSize = 0;
-    for (const SquareContext& context : squares) {
-        if (context.filled) reserveSize++;
-        else reserveSize += 4;
-    }
-
-    rectangles.clear();
-    rectangles.reserve(reserveSize);
-
-    if (!squares.empty()) {
-        SDL_FRect rect{};
-
-        for (const SquareContext& context : squares) {
-            rect.w = context.size.x;
-            rect.h = context.size.y;
-            rect.x = context.position.x;
-            rect.y = context.position.y;
-        
-            if (context.filled) {
-                rectangles.push_back(rect);
-            } else {
-                float t = std::min(static_cast<float>(context.outline_size), rect.w * 0.5f);
-                rectangles.push_back({ rect.x, rect.y, rect.w, t });
-                rectangles.push_back({ rect.x, rect.y + rect.h - t, rect.w, t });
-                rectangles.push_back({ rect.x, rect.y, t, rect.h });
-                rectangles.push_back({ rect.x + rect.w - t, rect.y, t, rect.h });
-            }
-        }
-        
+    if (!rectangles.empty()) {        
         (void) SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
         SDL_RenderFillRects(renderer, rectangles.data(), rectangles.size());
         (void) SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     }
 
-    squares.clear();
+    rectangles.clear();
 }

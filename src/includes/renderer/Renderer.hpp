@@ -14,7 +14,6 @@ struct Texture {
 class TextRenderer;
 class Renderer {
     private:
-        std::vector<SquareContext> squares;
         std::vector<SDL_FRect> rectangles;
     private:
         SDL_Renderer* renderer;
