@@ -99,7 +99,7 @@ World::World() {
 }
 
 Tile* World::getTile(const Vector2i& position) {
-    auto it = tiles.find(position);
+    const auto& it = tiles.find(position);
     if (it == tiles.end())
         return nullptr;
     return &it->second;
@@ -117,7 +117,7 @@ Tile* World::getMainTile(Vector2i* position) {
         position->y = mainPosition.y;
     }
 
-    auto it = tiles.find(*position);
+    const auto& it = tiles.find(*position);
     if (it == tiles.end())
         return tile;
 
@@ -130,7 +130,7 @@ Machine* World::getMachine(const Vector2i& position) {
     if (main == nullptr) 
         return nullptr;
 
-    auto it = machines.find(mainPosition);
+    const auto& it = machines.find(mainPosition);
     if (it == nullptr) 
         return nullptr;
 
@@ -142,19 +142,19 @@ const Machine* World::getConstMachine(const Vector2i& position) {
 }
 
 void World::addTile(const Vector2i& position, Tile tile) {
-    auto main = tiles.find(position);
+    const auto& main = tiles.find(position);
     if (main != tiles.end() && main->second.isSolid())
         return;
 
     const TileSetting& setting = getTileSetting(tile.id);
     Tile& current = tiles[position];
 
-    if (setting.is_multi_tiled) {
+    if (setting.is_multi_tiled) {      
         for (int x = 0; x < setting.size_x; x++) {
             for (int y = 0; y < setting.size_y; y++) {
                 if (x == 0 && y == 0) continue;
-
-                const auto& it = tiles.find({position.x + x, position.y + y});
+                Vector2i offsetPosition{position.x + x, position.y + y};
+                const auto& it = tiles.find(offsetPosition);
                 if (it != tiles.end() && !it->second.isAir())
                     return;
             }
@@ -163,9 +163,10 @@ void World::addTile(const Vector2i& position, Tile tile) {
         for (int x = 0; x < setting.size_x; x++) {
             for (int y = 0; y < setting.size_y; y++) {
                 if (x == 0 && y == 0) continue;
-
                 Vector2i offsetPosition{position.x + x, position.y + y};
-                tiles[offsetPosition].setMainTile(position, offsetPosition);
+                Tile offsetTile{0};
+                offsetTile.setMainTile(position, offsetPosition);
+                tiles[offsetPosition] = offsetTile;
             }
         }
     }
@@ -173,7 +174,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
     current = std::move(tile);
     if (setting.is_machine) {
         const MachineLogic& machineType = machine_logic[setting.machine_type];
-        auto& machine = machines.emplace(position, setting.inventory_size).first->second;
+        Machine& machine = machines.emplace(position, setting.inventory_size).first->second;
         machine.position = position;
         if (machineType.update != nullptr)
             machine.update = machineType.update;
@@ -212,7 +213,7 @@ bool World::tileConnects(Vector2i position, Vector2i myOut, int neighbourIndex, 
 
     if (!tile) return false;
     const TileSetting& setting = getTileSetting(tile->id);
-    if (setting.is_machine) return true;
+    if (setting.is_machine && tile->id != tileId) return true;
 
     Vector2i nOut = { tilePos.x + DIR[tile->rotation].x,
                       tilePos.y + DIR[tile->rotation].y };
