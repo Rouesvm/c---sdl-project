@@ -1,7 +1,7 @@
 #pragma once
 
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
 
 #include <SDL3/SDL_render.h>
 
@@ -11,9 +11,8 @@ class AssetManager {
     private:
         Renderer* renderer = nullptr;
     private:
-        std::vector<Texture> textures{};
-        
         std::unordered_map<std::string, int> string_to_textures{};
+        std::vector<Texture> textures{};
     public:
         AssetManager() {};
         AssetManager(Renderer&);
