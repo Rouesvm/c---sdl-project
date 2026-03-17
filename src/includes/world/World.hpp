@@ -19,8 +19,8 @@ class World {
         std::unordered_map<Vector2i, Tile> tiles{};
         std::unordered_map<Vector2i, Machine> machines{};
     private:
+        std::unordered_map<std::string, MachineLogic> machine_logic{};
         std::vector<TileSettings> tile_settings{};
-        std::vector<MachineType> machine_type{};
     public:
         std::array<uint8_t, 128> textures{};
 

@@ -83,10 +83,11 @@ struct TileSettings {
 
     std::vector<TileIO> ios{};
 
+    std::string machine_type = "";
 };
 
 class World;
 class Machine;
-struct MachineType {
+struct MachineLogic {
     std::function<void(double, World&, Machine&)> update;
 };

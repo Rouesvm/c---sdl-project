@@ -36,7 +36,8 @@ World::World() {
         false,
         1, 1,
         1,
-        {}
+        {},
+        "conveyor"
     });
 
 
@@ -45,14 +46,12 @@ World::World() {
         false,
         1, 1,
         2,
-        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+        {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}},
+        "drill"
     });
 
-    machine_type.push_back({});
-    machine_type.push_back({});
-    machine_type.push_back({});
-
-    machine_type.push_back({
+    machine_logic[""] = {[](double deltaTime, World& world, Machine& machine) {}};
+    machine_logic["conveyor"] = {
         [](double deltaTime, World& world, Machine& machine) {
             const Tile* tile = world.getTile(machine.position);
             if (tile == nullptr) return;
@@ -70,37 +69,38 @@ World::World() {
 
             Resource& insertSlot = insert->slots.front();
             Resource& thisSlot = machine.slots.front();
-            if (thisSlot.amount > 0) {
-                insertSlot.amount += 1;
-                thisSlot.amount -= 1;
+            if (thisSlot.amount > 0 && insertSlot.amount < insertSlot.max_size) {
+                insertSlot.add(thisSlot.item_id, 1);
+                thisSlot.remove(1);
             }
         }
-    });
-
-    machine_type.push_back({
+    };
+    machine_logic["drill"] = {
         [](double deltaTime, World& world, Machine& machine) {
             machine.ticks += deltaTime;
             if (machine.ticks < 1) return;
             machine.ticks = 0;
 
+            int item_id = 1;
+
             Resource& thisSlot = machine.slots.front();
-            thisSlot.amount += 1;
+            thisSlot.add(item_id, 1);
 
             for (int i = 0; i < 4; i++) {
                 const Vector2i& offset = DIR[i];
                 const Vector2i offsetedPosition = machine.position.add(offset);
 
                 Machine* insert = world.getMachine(offsetedPosition);
-                if (insert == nullptr) continue;
+                if (!insert) continue;
 
                 Resource& insertSlot = insert->slots.front();
-                if (thisSlot.amount > 0) {
-                    insertSlot.amount += 1;
-                    thisSlot.amount -= 1;
+                if (thisSlot.amount > 0 && insertSlot.amount < insertSlot.max_size) {
+                    insertSlot.add(item_id, 1);
+                    thisSlot.remove(1);
                 }
             }
         }
-    });
+    };
 }
 
 Tile* World::getTile(const Vector2i& position) {
@@ -187,7 +187,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
 
     current = std::move(tile);
     if (setting.is_machine) {
-        const MachineType& machineType = tile.id < tile_settings.size() ? machine_type[tile.id] : machine_type[0];
+        const MachineLogic& machineType = machine_logic[setting.machine_type];
         auto& machine = machines.emplace(position, setting.inventory_size).first->second;
         machine.position = position;
         if (machineType.update != nullptr)
