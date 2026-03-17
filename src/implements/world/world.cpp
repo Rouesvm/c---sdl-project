@@ -10,8 +10,6 @@
 
 #include "world/World.hpp"
 
-static constexpr Vector2i DIR[4] = { {0,-1}, {1,0}, {0,1}, {-1,0} };
-
 World::World() {
     tile_settings.push_back(TileSetting{});
 
@@ -106,13 +104,12 @@ Tile* World::getTile(const Vector2i& position) {
 }
 
 Tile* World::getMainTile(Vector2i* position) {
-    const Vector2i main{*position};
-
-    Tile* tile = getTile(main);
-    if (tile == nullptr) return tile;
+    const Vector2i current{*position};
+    Tile* tile = getTile(current);
+    if (!tile) return nullptr;
 
     if (tile->isMultiTile()) {
-        Vector2i mainPosition = tile->getMainPosition(main);
+        Vector2i mainPosition = tile->getMainPosition(current);
         position->x = mainPosition.x;
         position->y = mainPosition.y;
     }
@@ -127,11 +124,10 @@ Tile* World::getMainTile(Vector2i* position) {
 Machine* World::getMachine(const Vector2i& position) {
     Vector2i mainPosition = position;
     Tile* main = getMainTile(&mainPosition);
-    if (main == nullptr) 
-        return nullptr;
+    if (!main) return nullptr;
 
     const auto& it = machines.find(mainPosition);
-    if (it == nullptr) 
+    if (it == machines.end()) 
         return nullptr;
 
     return &it->second;
@@ -164,7 +160,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
             for (int y = 0; y < setting.size_y; y++) {
                 if (x == 0 && y == 0) continue;
                 Vector2i offsetPosition{position.x + x, position.y + y};
-                Tile offsetTile{0};
+                Tile offsetTile{tile.id};
                 offsetTile.setMainTile(position, offsetPosition);
                 tiles[offsetPosition] = offsetTile;
             }
@@ -229,9 +225,9 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
     const Tile& tile = result->second;
 
     if (tile.isAir()) return;
-    if (tile.id == 3) {
-        const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
 
+    const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
+    if (tile.id == 3) {
         Vector2i myOut{ position.x + DIR[tile.rotation].x,
                         position.y + DIR[tile.rotation].y };
 
@@ -261,23 +257,14 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
         renderContext.src.y = 0;
 
         renderContext.rotation = (frameRotation * 90);
-
-        renderer.renderTexture(blockTexture, renderContext);
-    } else if (tile.id != 0) {
-        const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
-        renderer.renderTexture(blockTexture, renderContext);
-    } else {
+    } else if (tile.offset > 0) {
         Vector2i tileOffset = tile.getOffset();
-        const auto& it = tiles.find(position - tileOffset);
-        if (it == tiles.end()) return;;
-
-        int mainTileID = it->second.id;
-
-        const Texture* blockTexture = Game::assetManager().getTexture(textures[mainTileID]);
+        blockTexture = Game::assetManager().getTexture(textures[tile.id]);
         renderContext.src.x = tileOffset.x * 16;
         renderContext.src.y = tileOffset.y * 16;
-        renderer.renderTexture(blockTexture, renderContext);
     }
+
+    renderer.renderTexture(blockTexture, renderContext);
 }
 
 void World::render(Renderer& renderer) {

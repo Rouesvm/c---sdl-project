@@ -25,7 +25,7 @@ struct Tile {
     }
 
     bool isMultiTile() const {
-        return id == 0 && offset != 0;
+        return offset != 0;
     }
 
     Vector2i getOffset() const {
