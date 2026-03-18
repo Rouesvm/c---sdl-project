@@ -16,12 +16,7 @@ a factory game made using SDL3 and C plus plus
 
 #### Run these commands inside of the root directory!
 
-#### Linux
 1. `cmake -S . -B build`
-2. `cmake --build build`
-
-#### Windows
-1. `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-windows.cmake`
 2. `cmake --build build`
 
 #
