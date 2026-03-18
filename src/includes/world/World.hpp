@@ -44,7 +44,7 @@ class World {
     public:
         World();
     public:
-        const TileSetting& getTileSetting(int id) {
+        const TileSetting& getTileSetting(int id) const {
             int tileSettingsSize = static_cast<int>(tile_settings.size());
             return id < tileSettingsSize ? tile_settings[id] : tile_settings[0];
         }

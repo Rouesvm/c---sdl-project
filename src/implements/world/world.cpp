@@ -39,7 +39,28 @@ World::World() {
     tile_settings.push_back(TileSetting{
         .is_machine = true,
         .inventory_size = 2,
-        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}},
+        .ios = {
+            TileIO{
+                .type = TYPE::OUTPUT, 
+                .side = SIDE::DOWN, 
+                .slot = 0
+            },
+            TileIO{
+                .type = TYPE::OUTPUT, 
+                .side = SIDE::UP, 
+                .slot = 0
+            },
+            TileIO{
+                .type = TYPE::OUTPUT, 
+                .side = SIDE::LEFT, 
+                .slot = 0
+            },
+            TileIO{
+                .type = TYPE::OUTPUT, 
+                .side = SIDE::RIGHT, 
+                .slot = 0
+            }
+        },
         .machine_type = "drill"
     });
 
@@ -76,39 +97,10 @@ World::World() {
 
             int resourceID = 1;
 
-            Resource& thisSlot = machine.slots.front();
-            thisSlot.add(resourceID, 1);
+            Resource& extractSlot = machine.slots.front();
+            extractSlot.add(resourceID, 1);
 
-            for (int i = 0; i < 4; i++) {
-                const Vector2i& offset = DIR[i];
-                const Vector2i offsetedPosition = machine.position.add(offset);
-
-                Machine* insert = world.getMachine(offsetedPosition);
-                if (!insert) continue;
-                const TileSetting& setting = world.getTileSetting(insert->id);
-                
-                Resource& insertSlot = insert->slots.front();
-                if (thisSlot.amount <= 0) continue;
-                if (insertSlot.amount >= insertSlot.max_size) continue;
-
-                for (const TileIO& io : setting.ios) {
-                    SIDE rotation = io.side;
-                    TYPE type = io.type;
-                    Vector2i ioOffset{io.x, io.y};
-
-                    if (type != TYPE::INPUT) continue;
-
-                    ioOffset = insert->position.add(ioOffset);
-                    if (offsetedPosition != ioOffset) continue;
-                    const Vector2i& rotationOffset = DIR[static_cast<int>(rotation)];      
-                    ioOffset = ioOffset.add(rotationOffset);
-
-                    if (machine.position != ioOffset) continue;
-                    
-                    insertSlot.add(resourceID, 1);
-                    thisSlot.remove(1);
-                }
-            }
+            MachineIO::insert(world, machine, 1);
         }
     };
 }

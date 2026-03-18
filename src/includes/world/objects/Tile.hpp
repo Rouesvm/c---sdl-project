@@ -70,6 +70,7 @@ struct TileIO {
     SIDE side;
     uint8_t x = 0;
     uint8_t y = 0;
+    uint8_t slot = 0;
 };
 
 struct TileSetting {
