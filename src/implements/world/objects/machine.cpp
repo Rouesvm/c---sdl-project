@@ -12,7 +12,7 @@ bool MachineIO::insertResource(Resource &extract, Resource &insert, int amount) 
 }
 
 bool MachineIO::insert(World &world, Machine &extract, bool amount) {
-    const TileSetting& setting = world.getTileSetting(extract.id);
+    const TileSetting& setting = world.getTileSetting(extract.tile.id);
     const Vector2i offsetedPosition = extract.position;
 
     for (const TileIO& io : setting.ios) {

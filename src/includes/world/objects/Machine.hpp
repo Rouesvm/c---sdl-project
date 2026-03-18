@@ -8,14 +8,15 @@ class Machine {
     public:
         std::vector<Resource> slots{};
     public:
+        Tile& tile;
+    public:
         Vector2i position{};
-        int id = 0;
         int inventory_size = 1;
     public:
         double ticks = 0;
         bool active = false;
     public:
-        Machine(int inventorySize): slots(inventorySize) {};
+        Machine(Tile& tileRef, int inventorySize): slots(inventorySize), tile(tileRef), inventory_size(inventorySize) {};
     public:
         std::function<void(double, World&, Machine&)> update{};
 };

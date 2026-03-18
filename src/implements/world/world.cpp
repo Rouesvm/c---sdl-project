@@ -67,28 +67,31 @@ World::World() {
     machine_logic[""] = {[](double deltaTime, World& world, Machine& machine) {}};
     machine_logic["conveyor"] = {
         [](double deltaTime, World& world, Machine& machine) {
-            const Tile* tile = world.getTile(machine.position);
-            if (tile == nullptr) return;
-            machine.ticks += deltaTime;
+            Resource& slot = machine.slots.front();
+            slot.max_size = 1;
+            if (slot.amount <= 0) return;
 
-            const Vector2i& offset = DIR[tile->rotation];
-            const Vector2i offsetedPosition = machine.position.add(offset);
+            machine.ticks += deltaTime * 0.5;
 
-            Machine* insert = world.getMachine(offsetedPosition);
+            if (machine.ticks <= 1.0) return;
 
-            if (machine.ticks < 1) return;
+            const Vector2i& offset = DIR[machine.tile.rotation];
+            const Vector2i nextPos = machine.position.add(offset);
 
-            machine.ticks = 0;
-            if (insert == nullptr) return;
+            Machine* next = world.getMachine(nextPos);
+            if (!next) {
+                machine.ticks = 0;
+                return;
+            }
 
-            Resource& insertSlot = insert->slots.front();
-            Resource& thisSlot = machine.slots.front();
-            if (thisSlot.amount > 0 && insertSlot.amount < insertSlot.max_size) {
-                insertSlot.add(thisSlot.item_id, 1);
-                thisSlot.remove(1);
+            Resource& nextSlot = next->slots.front();
+
+            if (!MachineIO::insertResource(slot, nextSlot, 1)) {
+                machine.ticks = 0;
             }
         }
     };
+
     machine_logic["drill"] = {
         [](double deltaTime, World& world, Machine& machine) {
             machine.ticks += deltaTime;
@@ -179,8 +182,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
     current = std::move(tile);
     if (setting.is_machine) {
         const MachineLogic& machineType = machine_logic[setting.machine_type];
-        Machine& machine = machines.emplace(position, setting.inventory_size).first->second;
-        machine.id = tile.id;
+        Machine& machine = machines.emplace(position, Machine(current, setting.inventory_size)).first->second;
         machine.position = position;
         if (machineType.update != nullptr)
             machine.update = machineType.update;
@@ -194,6 +196,10 @@ void World::removeTile(const Vector2i& position) {
 
     const TileSetting& setting = getTileSetting(tile->id);
 
+    if (setting.is_machine) {
+        machines.erase(main);
+    }
+
     if (setting.is_multi_tiled) {
         for (int x = 0; x < setting.size_x; x++) {
             for (int y = 0; y < setting.size_y; y++) {
@@ -201,10 +207,6 @@ void World::removeTile(const Vector2i& position) {
             }
         }
     } else tiles.erase(main);
-
-    if (setting.is_machine) {
-        machines.erase(main);
-    }
 }
 
 static int rotateIndex(int localIndex, int rot) {
