@@ -9,6 +9,7 @@ class Machine {
         std::vector<Resource> slots{};
         std::vector<TileIO> ios{};
 
+        int id = 0;
         int inventory_size = 1;
         double ticks = 0;
         

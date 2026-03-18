@@ -74,10 +74,10 @@ World::World() {
             if (machine.ticks < 1) return;
             machine.ticks = 0;
 
-            int item_id = 1;
+            int resourceID = 1;
 
             Resource& thisSlot = machine.slots.front();
-            thisSlot.add(item_id, 1);
+            thisSlot.add(resourceID, 1);
 
             for (int i = 0; i < 4; i++) {
                 const Vector2i& offset = DIR[i];
@@ -85,10 +85,27 @@ World::World() {
 
                 Machine* insert = world.getMachine(offsetedPosition);
                 if (!insert) continue;
-
+                const TileSetting& setting = world.getTileSetting(insert->id);
+                
                 Resource& insertSlot = insert->slots.front();
-                if (thisSlot.amount > 0 && insertSlot.amount < insertSlot.max_size) {
-                    insertSlot.add(item_id, 1);
+                if (thisSlot.amount <= 0) continue;
+                if (insertSlot.amount >= insertSlot.max_size) continue;
+
+                for (const TileIO& io : setting.ios) {
+                    SIDE rotation = io.side;
+                    TYPE type = io.type;
+                    Vector2i ioOffset{io.x, io.y};
+
+                    if (type != TYPE::INPUT) continue;
+
+                    ioOffset = insert->position.add(ioOffset);
+                    if (offsetedPosition != ioOffset) continue;
+                    const Vector2i& rotationOffset = DIR[static_cast<int>(rotation)];      
+                    ioOffset = ioOffset.add(rotationOffset);
+
+                    if (machine.position != ioOffset) continue;
+                    
+                    insertSlot.add(resourceID, 1);
                     thisSlot.remove(1);
                 }
             }
@@ -171,6 +188,7 @@ void World::addTile(const Vector2i& position, Tile tile) {
     if (setting.is_machine) {
         const MachineLogic& machineType = machine_logic[setting.machine_type];
         Machine& machine = machines.emplace(position, setting.inventory_size).first->second;
+        machine.id = tile.id;
         machine.position = position;
         if (machineType.update != nullptr)
             machine.update = machineType.update;
