@@ -18,16 +18,11 @@ World::World() {
         .is_multi_tiled = true,
         .size_x = 2, .size_y = 2,
         .inventory_size = 2,
-        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
+        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1, 0}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0, 1}},
+        .machine_type = "furnace"
     });
 
-    tile_settings.push_back(TileSetting{
-        .is_machine = true,
-        .is_multi_tiled = true,
-        .size_x = 2, .size_y = 2,
-        .inventory_size = 2,
-        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0}}
-    });
+    tile_settings.push_back(TileSetting{});
 
     tile_settings.push_back(TileSetting{
         .is_machine = true,
@@ -64,12 +59,47 @@ World::World() {
         .machine_type = "drill"
     });
 
+    recipe_manager.addRecipe(Recipe{}.add({1}).setOutput({2}));
+
     machine_logic[""] = {[](double deltaTime, World& world, Machine& machine) {}};
+
+    machine_logic["furnace"] = {
+        [](double deltaTime, World& world, Machine& machine) {
+            Resource& extractSlot = machine.slots.front();
+            if (extractSlot.amount <= 0) {
+                machine.ticks = 0;
+                return;
+            }
+
+            machine.ticks += deltaTime;
+            if (machine.ticks <= 1.0) return;
+            machine.ticks = 0;
+
+            RecipeManager& recipeManager = world.recipeManager();
+
+            Recipe recipeInput{};
+            Resource& resource = recipeManager.getRecipeOutput(recipeInput.add({extractSlot.item_id}));
+
+            Resource& outputSlot = machine.slots.back();
+            if (outputSlot.canStack(resource)) {
+                extractSlot.remove(1);
+                outputSlot.add(resource.item_id, 1);
+            } else {
+                machine.ticks = 0;
+            }
+
+            MachineIO::insert(world, machine, 1);
+        }
+    };
+
     machine_logic["conveyor"] = {
         [](double deltaTime, World& world, Machine& machine) {
             Resource& slot = machine.slots.front();
             slot.max_size = 1;
-            if (slot.amount <= 0) return;
+            if (slot.amount <= 0) {
+                machine.ticks = 0;
+                return;
+            }
 
             machine.ticks += deltaTime * 0.5;
 

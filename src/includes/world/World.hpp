@@ -9,6 +9,8 @@
 #include "world/objects/Tile.hpp"
 #include "world/objects/Machine.hpp"
 
+#include "management/RecipeManager.hpp"
+
 class RenderContext;
 class Renderer;
 class World {
@@ -21,9 +23,11 @@ class World {
     private:
         std::unordered_map<std::string, MachineLogic> machine_logic{};
         std::vector<TileSetting> tile_settings{};
+    private:
+        RecipeManager recipe_manager{};
     public:
         std::array<uint8_t, 128> textures;
-
+    public:
         static constexpr Vector2i DIR[4] = { 
             {0,-1}, {1,0}, {0,1}, {-1,0}
         };
@@ -47,6 +51,10 @@ class World {
         const TileSetting& getTileSetting(int id) const {
             int tileSettingsSize = static_cast<int>(tile_settings.size());
             return id < tileSettingsSize ? tile_settings[id] : tile_settings[0];
+        }
+    public:
+        RecipeManager& recipeManager() {
+            return recipe_manager;
         }
     public:
         Machine* getMachine(const Vector2i& position);
