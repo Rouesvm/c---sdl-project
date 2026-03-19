@@ -29,8 +29,9 @@ bool MachineIO::insert(World &world, Machine &extract, bool amount) {
 
         Machine* insert = world.getMachine(ioOffset);
         if (!insert) continue;
-
-        MachineIO::insertResource(extract.slots[io.slot], insert->slots.front(), amount);
+        const TileSetting& insertSetting = world.getTileSetting(insert->tile.id);
+        if (insertSetting.inventory_size == 1) 
+            MachineIO::insertResource(extract.slots[io.slot], insert->slots.front(), amount);
     }
 
     return true;

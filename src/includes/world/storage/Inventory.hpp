@@ -6,9 +6,19 @@ struct Resource {
     uint8_t amount = 0;
     uint8_t max_size = 8;
 
+    uint8_t progress = 0;
+
     static Resource& empty() {
         static Resource resource{};
         return resource;
+    }
+
+    bool isFull() {
+        return amount >= max_size;
+    }
+
+    bool isEmpty() {
+        return amount == 0;
     }
 
     bool canStack(Resource& resource) {
@@ -20,9 +30,9 @@ struct Resource {
     }
 
     void add(uint8_t itemId, uint8_t addAmount) {
-        if (amount >= max_size) return;
+        if (isFull()) return;
 
-        if (amount == 0) {
+        if (isEmpty()) {
             item_id = itemId;
         }
 

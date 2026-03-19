@@ -18,7 +18,10 @@ World::World() {
         .is_multi_tiled = true,
         .size_x = 2, .size_y = 2,
         .inventory_size = 2,
-        .ios = {TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1, 0}, TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0, 1}},
+        .ios = {
+            TileIO{TYPE::INPUT, SIDE::DOWN, 0, 1, 0}, 
+            TileIO{TYPE::OUTPUT, SIDE::UP, 0, 0, 1}
+        },
         .machine_type = "furnace"
     });
 
@@ -35,22 +38,22 @@ World::World() {
         .is_machine = true,
         .inventory_size = 2,
         .ios = {
-            TileIO{
+            {
                 .type = TYPE::OUTPUT, 
                 .side = SIDE::DOWN, 
                 .slot = 0
             },
-            TileIO{
+            {
                 .type = TYPE::OUTPUT, 
                 .side = SIDE::UP, 
                 .slot = 0
             },
-            TileIO{
+            {
                 .type = TYPE::OUTPUT, 
                 .side = SIDE::LEFT, 
                 .slot = 0
             },
-            TileIO{
+            {
                 .type = TYPE::OUTPUT, 
                 .side = SIDE::RIGHT, 
                 .slot = 0
@@ -66,29 +69,28 @@ World::World() {
     machine_logic["furnace"] = {
         [](double deltaTime, World& world, Machine& machine) {
             Resource& extractSlot = machine.slots.front();
-            if (extractSlot.amount <= 0) {
-                machine.ticks = 0;
-                return;
-            }
 
             machine.ticks += deltaTime;
             if (machine.ticks <= 1.0) return;
             machine.ticks = 0;
 
-            RecipeManager& recipeManager = world.recipeManager();
+            MachineIO::insert(world, machine, 1);
+
+            if (extractSlot.amount <= 0) {
+                return;
+            }
 
             Recipe recipeInput{};
-            Resource& resource = recipeManager.getRecipeOutput(recipeInput.add({extractSlot.item_id}));
+            Resource& resource = world.recipeManager().getRecipeOutput(recipeInput.add({extractSlot.item_id}));
 
             Resource& outputSlot = machine.slots.back();
+
             if (outputSlot.canStack(resource)) {
                 extractSlot.remove(1);
                 outputSlot.add(resource.item_id, 1);
             } else {
                 machine.ticks = 0;
             }
-
-            MachineIO::insert(world, machine, 1);
         }
     };
 
@@ -98,12 +100,9 @@ World::World() {
             slot.max_size = 1;
             if (slot.amount <= 0) {
                 machine.ticks = 0;
+                machine.active = false;
                 return;
             }
-
-            machine.ticks += deltaTime * 0.5;
-
-            if (machine.ticks <= 1.0) return;
 
             const Vector2i& offset = DIR[machine.tile.rotation];
             const Vector2i nextPos = machine.position.add(offset);
@@ -113,6 +112,14 @@ World::World() {
                 machine.ticks = 0;
                 return;
             }
+
+            if (next->slots.front().isFull()) {
+                machine.ticks = 0;
+                return;
+            }
+
+            machine.ticks += deltaTime * 0.5;
+            if (machine.ticks <= 1.0) return;
 
             Resource& nextSlot = next->slots.front();
 
@@ -358,6 +365,29 @@ void World::render(Renderer& renderer) {
 
     ticking_machines = machines.size();
     estimated_rendered_tiles = estimatedRenderedTiles;
+
+    for (auto& [_, machine] : machines) {
+        if (machine.tile.id != 3) continue;
+        
+        Vector2f render = Math::toVector2f(machine.position).multiply(Game::TILE_SIZE_IN_PIXELS).minus(cameraOffset).multiply(renderer.zoom);
+        Vector2f size{};
+
+        if (machine.slots.front().amount > 0) {
+            size.y = size.x = factor * 0.5f;
+
+            const Vector2i& dir = DIR[machine.tile.rotation];
+
+            render.x += size.x * 0.5f;
+            render.y += size.y * 0.5f;
+
+            float progress = machine.ticks;
+
+            render.x += (size.x * 2) * dir.x * progress;
+            render.y += (size.y * 2) * dir.y * progress;
+
+            renderer.renderTexture(Game::assetManager().getTexture(textures[4]), render, size);
+        }
+    }
 }   
 
 void World::update(double deltaTime) {
