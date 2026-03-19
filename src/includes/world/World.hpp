@@ -28,10 +28,6 @@ class World {
     public:
         std::array<uint8_t, 128> textures;
     public:
-        static constexpr Vector2i DIR[4] = { 
-            {0,-1}, {1,0}, {0,1}, {-1,0}
-        };
-    
         static constexpr Vector2i TBLR_SRC_POSITIONS[16]{
             Vector2i(0,3), Vector2i(0,2), Vector2i(0,0), Vector2i(0,1),
             Vector2i(3,3), Vector2i(3,2), Vector2i(3,0), Vector2i(3,1),

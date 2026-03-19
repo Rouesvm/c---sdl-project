@@ -24,7 +24,7 @@ bool MachineIO::insert(World &world, Machine &extract, bool amount) {
 
         ioOffset = extract.position.add(ioOffset);
         if (offsetedPosition != ioOffset) continue;
-        const Vector2i& rotationOffset = DIR[static_cast<int>(rotation)];      
+        const Vector2i& rotationOffset = direction(static_cast<int>(rotation));      
         ioOffset = ioOffset.add(rotationOffset);
 
         Machine* insert = world.getMachine(ioOffset);

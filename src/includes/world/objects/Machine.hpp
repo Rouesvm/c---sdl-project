@@ -25,6 +25,10 @@ namespace MachineIO {
     static constexpr Vector2i DIR[4] = { 
         {0,-1}, {1,0}, {0,1}, {-1,0}
     };
+
+    inline const Vector2i& direction(int rotation) {
+        return DIR[rotation];
+    }
     
     bool insertResource(Resource& extract, Resource& insert, int amount);
     bool insert(World& world, Machine& extract, bool amount);

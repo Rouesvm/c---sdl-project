@@ -104,7 +104,7 @@ World::World() {
                 return;
             }
 
-            const Vector2i& offset = DIR[machine.tile.rotation];
+            const Vector2i& offset = MachineIO::direction(machine.tile.rotation);
             const Vector2i nextPos = machine.position.add(offset);
 
             Machine* next = world.getMachine(nextPos);
@@ -113,15 +113,14 @@ World::World() {
                 return;
             }
 
-            if (next->slots.front().isFull()) {
+            Resource& nextSlot = next->slots.front();
+            if (nextSlot.isFull()) {
                 machine.ticks = 0;
                 return;
             }
 
-            machine.ticks += deltaTime * 0.5;
+            machine.ticks += deltaTime * 2;
             if (machine.ticks <= 1.0) return;
-
-            Resource& nextSlot = next->slots.front();
 
             if (!MachineIO::insertResource(slot, nextSlot, 1)) {
                 machine.ticks = 0;
@@ -251,8 +250,9 @@ static int rotateIndex(int localIndex, int rot) {
 }
 
 bool World::tileConnects(Vector2i position, Vector2i myOut, int neighbourIndex, int tileId) {    
-    Vector2i tilePos = { position.x + DIR[neighbourIndex].x,
-                      position.y + DIR[neighbourIndex].y };
+    const Vector2i& neighborDirection = MachineIO::direction(neighbourIndex);
+    Vector2i tilePos = { position.x + neighborDirection.x,
+                      position.y + neighborDirection.y };
 
     Tile* tile = getTile(tilePos);
 
@@ -260,8 +260,9 @@ bool World::tileConnects(Vector2i position, Vector2i myOut, int neighbourIndex, 
     const TileSetting& setting = getTileSetting(tile->id);
     if (setting.is_machine && tile->id != tileId) return true;
 
-    Vector2i nOut = { tilePos.x + DIR[tile->rotation].x,
-                      tilePos.y + DIR[tile->rotation].y };
+    const Vector2i& direction = MachineIO::direction(tile->rotation);
+    Vector2i nOut = { tilePos.x + direction.x,
+                      tilePos.y + direction.y };
 
     if (nOut.x == position.x && nOut.y == position.y) return true;
     if (myOut.x == tilePos.x && myOut.y == tilePos.y) return true;
@@ -277,8 +278,9 @@ void World::renderTile(Renderer& renderer, RenderContext& renderContext, const V
 
     const Texture* blockTexture = Game::assetManager().getTexture(textures[tile.id]);
     if (tile.id == 3) {
-        Vector2i myOut{ position.x + DIR[tile.rotation].x,
-                        position.y + DIR[tile.rotation].y };
+        const Vector2i& direction = MachineIO::direction(tile.rotation);
+        Vector2i myOut{ position.x + direction.x,
+                        position.y + direction.y };
 
         bool behind = tileConnects(position, myOut, rotateIndex(2, tile.rotation), 3);
         bool sideA  = tileConnects(position, myOut, rotateIndex(1, tile.rotation), 3);
@@ -366,26 +368,24 @@ void World::render(Renderer& renderer) {
     ticking_machines = machines.size();
     estimated_rendered_tiles = estimatedRenderedTiles;
 
+    Vector2f size{factor * 0.5f, factor * 0.5f};
     for (auto& [_, machine] : machines) {
         if (machine.tile.id != 3) continue;
         
-        Vector2f render = Math::toVector2f(machine.position).multiply(Game::TILE_SIZE_IN_PIXELS).minus(cameraOffset).multiply(renderer.zoom);
-        Vector2f size{};
+        Vector2f render = Math::toVector2f(machine.position)
+            .multiply(Game::TILE_SIZE_IN_PIXELS)
+            .minus(cameraOffset)
+            .multiply(renderer.zoom);
 
-        if (machine.slots.front().amount > 0) {
-            size.y = size.x = factor * 0.5f;
+        Resource& slot = machine.slots.front();
+        if (slot.amount > 0) {
+            const Vector2f& dir = Math::toVector2f(MachineIO::direction(machine.tile.rotation));
 
-            const Vector2i& dir = DIR[machine.tile.rotation];
+            render += size.multiply(0.5f);
+            render += size.multiply(2)
+                        .multiply(dir.multiply(machine.ticks));
 
-            render.x += size.x * 0.5f;
-            render.y += size.y * 0.5f;
-
-            float progress = machine.ticks;
-
-            render.x += (size.x * 2) * dir.x * progress;
-            render.y += (size.y * 2) * dir.y * progress;
-
-            renderer.renderTexture(Game::assetManager().getTexture(textures[4]), render, size);
+            renderer.renderTexture(dirt, render, size);
         }
     }
 }   
